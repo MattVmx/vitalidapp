@@ -85,7 +85,7 @@ public class DataInitializer implements CommandLineRunner {
         paciente.setDni(30123456);
         paciente.setDomicilio("Mar del Plata, Buenos Aires");
         paciente.setEmail("paciente@vitalidapp.com");
-        paciente.setFechaNacimiento(new Date());
+        paciente.setFechaNacimiento(java.sql.Date.valueOf("1992-04-18"));
         paciente.setImagen(imagenService.defaultImagen());
         paciente.setObraSocial(obraSocialService.buscarPorNombre("OSDE"));
         paciente.setPassword(new BCryptPasswordEncoder().encode("123456"));
@@ -102,7 +102,7 @@ public class DataInitializer implements CommandLineRunner {
         profesional.setDni(28765432);
         profesional.setDomicilio("Mar del Plata, Buenos Aires");
         profesional.setEmail("profesional@vitalidapp.com");
-        profesional.setFechaNacimiento(new Date());
+       profesional.setFechaNacimiento(java.sql.Date.valueOf("1985-09-12"));
         profesional.setImagen(imagenService.defaultImagen());
         profesional.setMatricula("MP-45821");
         profesional.setEspecialidad(Especialidad.CARDIOLOGIA);
