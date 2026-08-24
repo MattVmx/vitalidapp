@@ -61,44 +61,66 @@ public class DataInitializer implements CommandLineRunner {
         obraSocialService.crearObraSocial("OSECAC", 40d);
         obraSocialService.crearObraSocial("OSDE", 50d);
 
-        usuarioService.crearUsuario("paciente@paciente.com", "123456", Rol.PACIENTE);
-
         if (pacienteService.contarPacientes() < 1) {
-            crearPaciente();
+            crearPacienteDemo();
         }
 
-        // usuarioService.crearUsuario("profesional@profesional.com", "123456", Rol.PROFESIONAL);
-        if (profesionalService.contarProfesionales() < 100) {
-            for (int i = 0; i < 100; i++) {
+        int profesionalesExistentes = profesionalService.contarProfesionales();
+        if (profesionalesExistentes < 24) {
+            if (profesionalesExistentes == 0) {
+                crearProfesionalDemo();
+                profesionalesExistentes++;
+            }
+            for (int i = profesionalesExistentes; i < 24; i++) {
                 crearProfesional();
             }
         }
     }
 
-    private void crearPaciente() {
-        String[] nombres = { "Juan", "Pedro", "Maria", "Ana", "Lucia", "David", "Pepe", "Elias", "Ezequias", "Walter",
-                "Lorena", "Natasha" };
-        String[] apellidos = { "Garcia", "Martinez", "Gonzalez", "Lopez", "Perez", "Sanchez", "Rodriguez", "Fernandez",
-                "Gonzalez", "Martin", "Hernandez", "Diaz" };
-
+    private void crearPacienteDemo() {
         Paciente paciente = new Paciente();
         paciente.setActivo(true);
-        String nombre = randomOfArray(nombres).toString();
-        paciente.setNombre(nombre);
-        String apellido = randomOfArray(apellidos).toString();
-        paciente.setApellido(apellido);
-        Integer dni = intRandom(10000000, 90000000);
-        paciente.setDni(dni);
-        paciente.setDomicilio(nombre + " " + apellido + " " + dni);
-        paciente.setEmail(nombre + apellido + dni + "@prueba.com");
-        Date fechaNacimiento = new Date();
-        paciente.setFechaNacimiento(fechaNacimiento);
+        paciente.setNombre("Sofia");
+        paciente.setApellido("Torres");
+        paciente.setDni(30123456);
+        paciente.setDomicilio("Mar del Plata, Buenos Aires");
+        paciente.setEmail("paciente@vitalidapp.com");
+        paciente.setFechaNacimiento(new Date());
         paciente.setImagen(imagenService.defaultImagen());
-        paciente.setObraSocial(randomObraSocial());
+        paciente.setObraSocial(obraSocialService.buscarPorNombre("OSDE"));
         paciente.setPassword(new BCryptPasswordEncoder().encode("123456"));
         paciente.setRol(Rol.PACIENTE);
-        paciente.setSexo(Sexo.values()[intRandom(0, 2)]);
+        paciente.setSexo(Sexo.FEMENINO);
         pacienteService.crearPaciente(paciente);
+    }
+
+    private void crearProfesionalDemo() {
+        Profesional profesional = new Profesional();
+        profesional.setActivo(true);
+        profesional.setNombre("Laura");
+        profesional.setApellido("Fernandez");
+        profesional.setDni(28765432);
+        profesional.setDomicilio("Mar del Plata, Buenos Aires");
+        profesional.setEmail("profesional@vitalidapp.com");
+        profesional.setFechaNacimiento(new Date());
+        profesional.setImagen(imagenService.defaultImagen());
+        profesional.setMatricula("MP-45821");
+        profesional.setEspecialidad(Especialidad.CARDIOLOGIA);
+        profesional.setPassword(new BCryptPasswordEncoder().encode("123456"));
+        profesional.setRol(Rol.PROFESIONAL);
+        profesional.setSexo(Sexo.FEMENINO);
+
+        Disponibilidad disponibilidad = new Disponibilidad();
+        disponibilidad.setEntrada(9);
+        disponibilidad.setInicioDescanso(13);
+        disponibilidad.setFinDescanso(14);
+        disponibilidad.setSalida(18);
+        disponibilidad.setDias(new String[] { "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES" });
+        profesional.setDisponibilidad(disponibilidadService.guardar(disponibilidad));
+        profesional.setProvincia(Provincias.BUENOS_AIRES);
+        profesional.setPrecioConsulta(6500d);
+        profesional.setCalificacion(4.8d);
+        profesionalService.crearProfesional(profesional);
     }
 
     private Object randomOfArray(Object[] array) {
@@ -158,7 +180,7 @@ public class DataInitializer implements CommandLineRunner {
         profesional.setDisponibilidad(disponibilidadService.guardar(disponibilidad));
         Provincias provincia = (Provincias) randomOfArray(Provincias.values());
         profesional.setProvincia(provincia);
-        Double precio = new Double(intRandom(1000, 10000));
+        Double precio = Double.valueOf(intRandom(1000, 10000));
         profesional.setPrecioConsulta(precio);
         profesional.setCalificacion(0d);
         profesionalService.crearProfesional(profesional);
