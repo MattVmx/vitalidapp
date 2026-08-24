@@ -25,31 +25,54 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests()
-                .antMatchers("/css/*", "/js/*", "/img/*", "/**")
-                .permitAll()
-                .antMatchers("/paciente/*").hasRole("PACIENTE")
-                .antMatchers("/profesional/*").hasRole("PROFESIONAL")
-                .antMatchers("/admin/*").hasRole("ADMIN")
-                .and()
-                .formLogin()
-                .loginPage("/login")
-                .loginProcessingUrl("/logincheck")
-                .usernameParameter("email")
-                .passwordParameter("password")
-                .defaultSuccessUrl("/")
-                .failureUrl("/logout")
-                .permitAll()
-                .and()
-                .logout()
-                .logoutUrl("/logout")
-                .invalidateHttpSession(true)
-                .logoutSuccessUrl("/")
-                .permitAll()
-                .and()
-                .csrf()
-                .disable();
-    }
+protected void configure(HttpSecurity http) throws Exception {
+    http
+        .authorizeHttpRequests()
+        .antMatchers(
+            "/",
+            "/login",
+            "/registro",
+            "/especialidades",
+            "/especialidad/**",
+            "/css/**",
+            "/js/**",
+            "/img/**",
+            "/perfil/imagen/**",
+            "/error",
+            "/favicon.ico"
+        ).permitAll()
+        .antMatchers("/admin/**", "/obras_sociales/**")
+            .hasRole("ADMIN")
+        .antMatchers(
+            "/consulta/paciente",
+            "/consulta/consultas",
+            "/consulta/diagnostico"
+        ).hasRole("PROFESIONAL")
+        .antMatchers("/profesional/**")
+            .hasRole("PROFESIONAL")
+        .antMatchers("/paciente/**", "/consulta/**")
+            .hasRole("PACIENTE")
+        .antMatchers("/perfil/**")
+            .authenticated()
+        .anyRequest()
+            .authenticated()
+        .and()
+        .formLogin()
+            .loginPage("/login")
+            .loginProcessingUrl("/logincheck")
+            .usernameParameter("email")
+            .passwordParameter("password")
+            .defaultSuccessUrl("/")
+            .failureUrl("/login?error=true")
+            .permitAll()
+        .and()
+        .logout()
+            .logoutUrl("/logout")
+            .invalidateHttpSession(true)
+            .logoutSuccessUrl("/")
+            .permitAll()
+        .and()
+        .csrf()
+            .disable();
+}
 }
