@@ -4,8 +4,7 @@ import com.example.healthserviceapp.Exceptions.MiException;
 import com.example.healthserviceapp.entity.Imagen;
 import com.example.healthserviceapp.repository.ImagenRepository;
 
-import java.io.File;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +13,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -43,8 +43,7 @@ public class ImagenService {
         }
         try {
             Resource resource = resourceLoader.getResource("classpath:/static/img/defaultProfile.jpg");
-            File imagenPredeterminada = resource.getFile();
-            byte[] bytes = Files.readAllBytes(imagenPredeterminada.toPath());
+            byte[] bytes = readResource(resource);
             imagen.setMime("image/jpg");
             imagen.setNombre("defaultProfile");
             imagen.setContenido(bytes);
@@ -84,8 +83,7 @@ public class ImagenService {
         try {
             Imagen imagen = new Imagen();
             Resource resource = resourceLoader.getResource("classpath:/static/img/defaultProfile.jpg");
-            File imagenPredeterminada = resource.getFile();
-            byte[] bytes = Files.readAllBytes(imagenPredeterminada.toPath());
+            byte[] bytes = readResource(resource);
             imagen.setMime("image/jpg");
             imagen.setNombre("defaultProfile");
             imagen.setContenido(bytes);
@@ -95,6 +93,12 @@ public class ImagenService {
             System.err.println(e.getMessage());
         }
         return null;
+    }
+
+    private byte[] readResource(Resource resource) throws Exception {
+        try (InputStream inputStream = resource.getInputStream()) {
+            return StreamUtils.copyToByteArray(inputStream);
+        }
     }
 
 }
