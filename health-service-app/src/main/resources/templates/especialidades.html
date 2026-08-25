@@ -50,6 +50,7 @@
         <nav class="specialty-list" aria-label="Filtrar profesionales por especialidad">
           <a th:href="@{/especialidades}"
              class="specialty-list__all"
+             data-directory-navigation
              th:classappend="${especialidadSeleccionada == null ? ' is-active' : ''}"
              th:attr="aria-current=${especialidadSeleccionada == null ? 'true' : null}">
             Todas las especialidades
@@ -57,6 +58,7 @@
           <a th:each="especialidad : ${especialidades}"
              th:href="@{/especialidad/profesionales/__${especialidad}__}"
              class="specialty-list__item"
+             data-directory-navigation
              th:classappend="${especialidadSeleccionada == especialidad ? ' is-active' : ''}"
              th:attr="aria-current=${especialidadSeleccionada == especialidad ? 'true' : null}">
             <span th:text="${#strings.capitalizeWords(especialidad.toString().replaceAll('_', ' ').toLowerCase())}"></span>
@@ -76,8 +78,9 @@
           <form class="professional-search"
                 role="search"
                 th:action="@{/especialidad/busqueda}"
+                data-directory-navigation
                 method="GET">
-            <label for="professional-search" class="visually-hidden">Buscar profesional por nombre</label>
+            <label for="professional-search" class="visually-hidden">Buscar profesional por nombre o apellido</label>
             <span aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false">
                 <circle cx="11" cy="11" r="7"/>
@@ -87,7 +90,7 @@
             <input id="professional-search"
                    type="search"
                    name="nombre"
-                   placeholder="Buscar por nombre"
+                   placeholder="Buscar por nombre o apellido"
                    th:value="${busqueda}"
                    autocomplete="off">
             <button class="btn btn-primary" type="submit">Buscar</button>
@@ -137,7 +140,9 @@
           <span aria-hidden="true">⌕</span>
           <h3>No encontramos profesionales</h3>
           <p>Probá con otro nombre o elegí una especialidad diferente.</p>
-          <a th:href="@{/especialidades}" class="btn btn-soft">Ver todos</a>
+          <a th:href="@{/especialidades}"
+             class="btn btn-soft"
+             data-directory-navigation>Ver todos</a>
         </div>
       </div>
     </div>
@@ -149,5 +154,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
         crossorigin="anonymous"></script>
+<script th:src="@{/js/especialidades.js}"></script>
 </body>
 </html>
