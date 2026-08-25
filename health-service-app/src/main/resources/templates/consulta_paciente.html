@@ -1,69 +1,132 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Tus consultas</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-    <link rel="stylesheet" href="/css/error.css">
-    <link rel="stylesheet" href="/css/star.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Consultá tus próximos turnos y el historial de atención en Vitalidapp.">
+  <title>Mis consultas | Vitalidapp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ"
+        crossorigin="anonymous">
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="stylesheet" th:href="@{/css/star.css}">
+  <link rel="stylesheet" th:href="@{/css/historial.css}">
 </head>
+<body class="records-page-body">
+<header th:replace="fragments/navbar :: nav_bar"></header>
 
-<body>
+<main class="records-page">
+  <div class="container">
+    <header class="records-heading">
+      <div>
+        <span class="eyebrow">Mi salud</span>
+        <h1>Mis consultas</h1>
+        <p>Revisá tus próximos turnos, consultá los datos de cada atención y calificá a tus profesionales.</p>
+      </div>
+      <a th:href="@{/consulta/provincia}" class="btn btn-primary btn-lg">
+        Reservar nuevo turno <span aria-hidden="true">→</span>
+      </a>
+    </header>
 
-    <hr>
-    <a href="/" class="btn btn-primary">Volver a inicio</a>
+    <section class="records-empty" th:if="${#lists.isEmpty(consulta)}">
+      <span class="records-empty__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M7 3v3M17 3v3M4.5 9h15M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/></svg>
+      </span>
+      <h2>Todavía no tenés consultas</h2>
+      <p>Cuando reserves un turno, vas a encontrar toda la información en este espacio.</p>
+      <a th:href="@{/consulta/provincia}" class="btn btn-primary">Buscar profesionales</a>
+    </section>
 
-    <div class="container">
-        <div class="row">
-            <div class="card border-primary mb-3" style="max-width: 25rem; margin: 0 20px;background-color: #e9f5fb;"
-                th:each="iterador : ${consulta}">
-                <div class="card-header" th:text="${'Consulta de ' + iterador.profesional.especialidad}"></div>
-                <div class="card-body">
-                    <h5 class="card-title" th:text="${iterador.fecha + ' a las ' + iterador.horario+':00'}"></h5>
-                    <p class="card-text" th:text="${'En ' + iterador.profesional.domicilio}"></p>
-                    <p class="card-text"
-                        th:text="${'Con '+ iterador.profesional.nombre + ' ' + iterador.profesional.apellido}"></p>
-                    <p class="card-text" th:text="${'$' + iterador.precio}"></p>
-                </div>
-                <p
-                    th:if="${(#dates.format(#dates.createNow(), 'yyyy-MM-dd') <= iterador.fecha and #dates.format(#dates.createNow(), 'HH') < iterador.horario.toString())}">
-                    Solo podras calificar
-                    luego de la consulta</p>
-                <form class="formulario p-3" th:action="@{/consulta/calificar/__${iterador.id}__}" method="POST"
-                    enctype="multipart/form-data"
-                    th:if="${((#dates.format(#dates.createNow(), 'yyyy-MM-dd') > iterador.fecha) or (#dates.format(#dates.createNow(), 'yyyy-MM-dd') == iterador.fecha and #dates.format(#dates.createNow(), 'HH') >= iterador.horario.toString()))}">
-                    <div class="align-items-center row">
-                        <label class="rating-label" style="display: flex; justify-content: center;">
-                            <input class="rating" max="5" readonly step="0.01"
-                                th:style="'--fill:#777;'+'--value:__${iterador.calificacion}__'" type="range"
-                                th:if="${iterador.calificacion != null}">
-                        </label>
-                        <label class="rating-label" style="display: flex; justify-content: center;">
-                            <input class="rating" name="calificacion" max="5"
-                                oninput="this.style.setProperty('--value', `${this.valueAsNumber}`)" step="1"
-                                style="--value:0" type="range" th:if="${iterador.calificacion == null}">
-                        </label>
-                        <button type="submit" class="btn btn-outline-primary ms-2 mt-1 botones"
-                            th:if="${iterador.calificacion == null}">Calificar</button>
-                    </div>
-                </form>
+    <section class="appointment-grid" th:unless="${#lists.isEmpty(consulta)}" aria-label="Listado de consultas">
+      <article class="appointment-card"
+               th:each="iterador : ${consulta}"
+               th:with="hoy=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')},
+                        horaActual=${#dates.format(#dates.createNow(), 'HH')},
+                        horaTurno=${#numbers.formatInteger(iterador.horario, 2)}">
+        <header class="appointment-card__header">
+          <div>
+            <span class="appointment-card__label">Especialidad</span>
+            <h2 th:text="${#strings.capitalizeWords(iterador.profesional.especialidad.toString().replaceAll('_', ' ').toLowerCase())}">Cardiología</h2>
+          </div>
+          <span class="status-badge status-badge--upcoming"
+                th:if="${hoy < iterador.fecha or (hoy == iterador.fecha and horaActual < horaTurno)}">
+            Próxima
+          </span>
+          <span class="status-badge status-badge--completed"
+                th:if="${hoy > iterador.fecha or (hoy == iterador.fecha and horaActual >= horaTurno)}">
+            Realizada
+          </span>
+        </header>
 
-                <a class="btn btn-primary mb-3" th:href="@{/consulta/eliminar/__${iterador.id}__}"
-                    th:if="${(#dates.format(#dates.createNow(), 'yyyy-MM-dd') <= iterador.fecha and #dates.format(#dates.createNow(), 'HH') < iterador.horario.toString())}">Dar
-                    de baja
-                    consulta</a>
-            </div>
-
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-                integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-                crossorigin="anonymous"></script>
+        <div class="appointment-card__schedule">
+          <span class="appointment-card__calendar" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M7 3v3M17 3v3M4.5 9h15M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/></svg>
+          </span>
+          <div>
+            <strong th:text="${iterador.fecha}">2026-08-26</strong>
+            <span th:text="${iterador.horario + ':00 hs'}">14:00 hs</span>
+          </div>
         </div>
-    </div>
-    <div th:replace="fragments/footer :: footer"></div>
-</body>
 
+        <dl class="appointment-meta">
+          <div>
+            <dt>Profesional</dt>
+            <dd th:text="${iterador.profesional.nombre + ' ' + iterador.profesional.apellido}">Laura Fernández</dd>
+          </div>
+          <div>
+            <dt>Ubicación</dt>
+            <dd th:text="${iterador.profesional.domicilio}">Mar del Plata, Buenos Aires</dd>
+          </div>
+          <div>
+            <dt>Valor</dt>
+            <dd th:text="${'$' + iterador.precio}">$6450</dd>
+          </div>
+        </dl>
+
+        <footer class="appointment-card__footer"
+                th:if="${hoy < iterador.fecha or (hoy == iterador.fecha and horaActual < horaTurno)}">
+          <p>Podrás calificar la atención una vez finalizada la consulta.</p>
+          <a class="btn btn-outline-danger"
+             th:href="@{/consulta/eliminar/{id}(id=${iterador.id})}">
+            Cancelar turno
+          </a>
+        </footer>
+
+        <footer class="appointment-card__footer appointment-card__footer--rating"
+                th:if="${hoy > iterador.fecha or (hoy == iterador.fecha and horaActual >= horaTurno)}">
+          <div th:if="${iterador.calificacion != null}" class="rating-summary">
+            <span>Tu calificación</span>
+            <label class="rating-label" aria-label="Calificación otorgada">
+              <input class="rating" max="5" readonly step="0.01"
+                     th:style="'--fill:#f5b301;'+'--value:__${iterador.calificacion}__'"
+                     type="range">
+            </label>
+          </div>
+
+          <form class="rating-form"
+                th:action="@{/consulta/calificar/{id}(id=${iterador.id})}"
+                method="POST"
+                th:if="${iterador.calificacion == null}">
+            <div>
+              <span>¿Cómo fue la atención?</span>
+              <label class="rating-label" aria-label="Elegir una calificación de una a cinco estrellas">
+                <input class="rating" name="calificacion" min="1" max="5" value="5"
+                       oninput="this.style.setProperty('--value', `${this.valueAsNumber}`)"
+                       step="1" style="--value:5" type="range">
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar calificación</button>
+          </form>
+        </footer>
+      </article>
+    </section>
+  </div>
+</main>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
+</body>
 </html>
