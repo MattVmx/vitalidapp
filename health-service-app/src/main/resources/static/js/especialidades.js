@@ -2,6 +2,30 @@
   'use strict';
 
   var storageKey = 'vitalidapp-directory-scroll';
+  var root = document.documentElement;
+  var savedPosition = readSavedPosition();
+
+  if (savedPosition !== null) {
+    root.classList.add('directory-scroll-pending');
+  }
+
+  function readSavedPosition() {
+    var storedValue;
+
+    try {
+      storedValue = window.sessionStorage.getItem(storageKey);
+      window.sessionStorage.removeItem(storageKey);
+    } catch (error) {
+      return null;
+    }
+
+    if (storedValue === null) {
+      return null;
+    }
+
+    var position = Number(storedValue);
+    return Number.isFinite(position) ? position : null;
+  }
 
   function saveScrollPosition() {
     try {
@@ -12,28 +36,16 @@
   }
 
   function restoreScrollPosition() {
-    var savedPosition;
-
-    try {
-      savedPosition = window.sessionStorage.getItem(storageKey);
-      window.sessionStorage.removeItem(storageKey);
-    } catch (error) {
-      return;
-    }
-
     if (savedPosition === null) {
       return;
     }
 
-    var position = Number(savedPosition);
-    if (!Number.isFinite(position)) {
-      return;
-    }
+    root.style.scrollBehavior = 'auto';
+    window.scrollTo(0, savedPosition);
 
     window.requestAnimationFrame(function () {
-      window.requestAnimationFrame(function () {
-        window.scrollTo(0, position);
-      });
+      root.style.removeProperty('scroll-behavior');
+      root.classList.remove('directory-scroll-pending');
     });
   }
 
@@ -54,4 +66,8 @@
   } else {
     restoreScrollPosition();
   }
+
+  window.setTimeout(function () {
+    root.classList.remove('directory-scroll-pending');
+  }, 1500);
 })();

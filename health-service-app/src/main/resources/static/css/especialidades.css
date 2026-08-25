@@ -3,6 +3,10 @@
   background: var(--surface-soft);
 }
 
+html.directory-scroll-pending body {
+  visibility: hidden;
+}
+
 .directory-hero {
   position: relative;
   overflow: hidden;
