@@ -1,0 +1,788 @@
+.admin-page-body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  background: var(--surface-soft);
+}
+
+.admin-page {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  padding: 4.5rem 0 6rem;
+  background:
+    radial-gradient(circle at 94% 6%, rgba(19, 168, 158, 0.09), transparent 23%),
+    radial-gradient(circle at 5% 94%, rgba(36, 87, 214, 0.08), transparent 22%),
+    var(--surface-soft);
+}
+
+.admin-page::before {
+  position: absolute;
+  top: -10rem;
+  right: -9rem;
+  width: 350px;
+  height: 350px;
+  border: 1px solid rgba(36, 87, 214, 0.09);
+  border-radius: 50%;
+  box-shadow: 0 0 0 56px rgba(36, 87, 214, 0.022);
+  content: '';
+}
+
+.admin-heading {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2.25rem;
+}
+
+.admin-heading--compact {
+  margin-bottom: 2rem;
+}
+
+.admin-heading > div {
+  max-width: 720px;
+}
+
+.admin-heading h1 {
+  margin: 0.8rem 0 0.75rem;
+  color: var(--ink);
+  font-size: clamp(2.25rem, 4vw, 3.55rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+
+.admin-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.admin-heading .btn {
+  flex: 0 0 auto;
+}
+
+.admin-summary {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.15rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.summary-card__icon,
+.insurance-name-cell > span,
+.insurance-create-card__icon {
+  display: grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  color: var(--primary);
+  background: var(--primary-soft);
+  border-radius: 12px;
+  place-items: center;
+}
+
+.summary-card__icon--teal {
+  color: var(--teal-dark);
+  background: var(--teal-soft);
+}
+
+.summary-card__icon--neutral {
+  color: var(--muted);
+  background: var(--surface-soft);
+}
+
+.summary-card svg,
+.admin-search svg,
+.admin-table__empty svg,
+.insurance-name-cell svg,
+.insurance-create-card svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.summary-card strong,
+.summary-card span,
+.summary-card a {
+  display: block;
+}
+
+.summary-card strong {
+  overflow: hidden;
+  margin-bottom: 0.12rem;
+  color: var(--ink);
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+}
+
+.summary-card div > span,
+.summary-card a {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.summary-card a {
+  color: var(--primary);
+  font-weight: 750;
+}
+
+.section-kicker {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--teal-dark);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.admin-panel {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.admin-panel__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-panel__header h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.admin-panel__header > div > small {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.admin-search {
+  position: relative;
+  display: flex;
+  width: min(560px, 100%);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-search__icon {
+  position: absolute;
+  z-index: 1;
+  left: 0.85rem;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.admin-search__icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.admin-search .form-control {
+  min-height: 42px;
+  padding-left: 2.5rem;
+  color: var(--ink);
+  background-color: var(--surface);
+  border-color: #cfd7e5;
+  border-radius: 10px;
+}
+
+.admin-search .form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.12);
+}
+
+.admin-table-shell {
+  overflow: visible;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 1rem 1.25rem;
+  vertical-align: middle;
+}
+
+.admin-table thead th {
+  color: var(--muted);
+  background: var(--surface-soft);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-table tbody tr:not(.admin-table__empty) {
+  border-bottom: 1px solid var(--line);
+  transition: background-color 160ms ease;
+}
+
+.admin-table tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.admin-table tbody tr:not(.admin-table__empty):hover {
+  background: rgba(36, 87, 214, 0.025);
+}
+
+.user-cell,
+.insurance-name-cell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  display: grid;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  color: #fff;
+  background: linear-gradient(145deg, var(--primary), var(--teal));
+  border-radius: 11px;
+  place-items: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.user-cell div {
+  min-width: 0;
+}
+
+.user-cell strong,
+.user-cell small {
+  display: block;
+}
+
+.user-cell strong {
+  max-width: 260px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-cell small {
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+
+.admin-table code {
+  display: inline-block;
+  max-width: 145px;
+  padding: 0.3rem 0.45rem;
+  overflow: hidden;
+  color: var(--muted);
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.role-badge,
+.account-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.38rem 0.58rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.role-badge {
+  color: var(--primary);
+  background: var(--primary-soft);
+  border: 1px solid rgba(36, 87, 214, 0.14);
+}
+
+.account-status--active {
+  color: #08755d;
+  background: #e1f8ef;
+  border: 1px solid #afe8d7;
+}
+
+.account-status--inactive {
+  color: #9b2c25;
+  background: #fff0ee;
+  border: 1px solid #f3c5c0;
+}
+
+.account-status > span {
+  width: 7px;
+  height: 7px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.admin-action-menu {
+  width: 270px;
+  padding: 1rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+}
+
+.admin-action-menu form {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.admin-action-menu label,
+.admin-field label {
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.admin-action-menu .form-control,
+.admin-action-menu .form-select,
+.admin-field .form-control {
+  min-height: 42px;
+  color: var(--ink);
+  background-color: var(--surface);
+  border-color: #cfd7e5;
+  border-radius: 9px;
+  font-size: 0.8rem;
+}
+
+.admin-table__empty td {
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+
+.admin-table__empty td > span {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 0.85rem;
+  color: var(--primary);
+  background: var(--primary-soft);
+  border-radius: 16px;
+  place-items: center;
+}
+
+.admin-table__empty strong,
+.admin-table__empty p {
+  display: block;
+}
+
+.admin-table__empty strong {
+  margin-bottom: 0.35rem;
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.admin-table__empty p {
+  max-width: 480px;
+  margin: 0 auto 1rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+/* Insurance management */
+.admin-breadcrumb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.admin-breadcrumb a {
+  color: var(--primary);
+}
+
+.insurance-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(270px, 0.68fr) minmax(0, 1.6fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.insurance-create-card {
+  position: sticky;
+  top: 1.5rem;
+  padding: 1.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.insurance-create-card__icon {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 1.3rem;
+  color: #fff;
+  background: linear-gradient(145deg, var(--primary), var(--teal));
+  border-radius: 14px;
+}
+
+.insurance-create-card h2 {
+  margin: 0.35rem 0 0.7rem;
+  color: var(--ink);
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.insurance-create-card > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.insurance-create-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.admin-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-field small {
+  color: var(--muted);
+  font-size: 0.65rem;
+  line-height: 1.45;
+}
+
+.money-field {
+  position: relative;
+}
+
+.money-field > span {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 0.85rem;
+  color: var(--muted);
+  font-weight: 800;
+  transform: translateY(-50%);
+}
+
+.money-field .form-control {
+  padding-left: 2rem;
+}
+
+.insurance-panel .admin-panel__header {
+  align-items: flex-end;
+}
+
+.insurance-name-cell > span {
+  flex-basis: 38px;
+  width: 38px;
+  height: 38px;
+  color: var(--teal-dark);
+  background: var(--teal-soft);
+  border-radius: 11px;
+}
+
+.insurance-name-cell strong {
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.coverage-amount {
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.insurance-action-menu {
+  width: 320px;
+}
+
+.insurance-edit-group {
+  display: grid;
+  gap: 1rem;
+}
+
+.insurance-edit-group form + form {
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+html[data-theme='dark'] .admin-page {
+  background:
+    radial-gradient(circle at 94% 6%, rgba(67, 210, 199, 0.07), transparent 23%),
+    radial-gradient(circle at 5% 94%, rgba(111, 143, 255, 0.07), transparent 22%),
+    var(--surface-soft);
+}
+
+html[data-theme='dark'] .admin-page::before {
+  border-color: rgba(111, 143, 255, 0.12);
+  box-shadow: 0 0 0 56px rgba(111, 143, 255, 0.02);
+}
+
+html[data-theme='dark'] .admin-table thead th,
+html[data-theme='dark'] .admin-table code,
+html[data-theme='dark'] .summary-card__icon--neutral {
+  background: #111e33;
+}
+
+html[data-theme='dark'] .admin-table tbody tr:not(.admin-table__empty):hover {
+  background: rgba(111, 143, 255, 0.04);
+}
+
+html[data-theme='dark'] .account-status--active {
+  color: #7ee2b8;
+  background: #123529;
+  border-color: #245c48;
+}
+
+html[data-theme='dark'] .account-status--inactive {
+  color: #ffb4ab;
+  background: #3d1c22;
+  border-color: #66303a;
+}
+
+html[data-theme='dark'] .admin-search .form-control,
+html[data-theme='dark'] .admin-action-menu .form-control,
+html[data-theme='dark'] .admin-action-menu .form-select,
+html[data-theme='dark'] .admin-field .form-control {
+  color: var(--ink);
+  background-color: #0b1526;
+  border-color: #3a4b68;
+}
+
+html[data-theme='dark'] .admin-action-menu {
+  color: var(--ink);
+  background: #121f34;
+}
+
+@media (max-width: 1199.98px) {
+  .admin-panel__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-search {
+    width: 100%;
+  }
+
+  .insurance-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .insurance-create-card {
+    position: static;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .admin-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-table-shell {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .admin-page {
+    padding: 3.5rem 0 4.5rem;
+  }
+
+  .admin-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-heading .btn {
+    width: 100%;
+  }
+
+  .admin-search {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .admin-search__icon {
+    top: 12px;
+  }
+
+  .admin-search .form-control {
+    flex: 1 0 100%;
+  }
+
+  .admin-search .btn {
+    flex: 1 1 auto;
+  }
+
+  .admin-table-shell {
+    overflow: visible;
+  }
+
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .admin-table tbody {
+    display: grid;
+    gap: 0.85rem;
+    padding: 0.85rem;
+  }
+
+  .admin-table tbody tr:not(.admin-table__empty) {
+    padding: 0.5rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 13px;
+  }
+
+  .admin-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--line);
+    text-align: right;
+  }
+
+  .admin-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .admin-table td::before {
+    flex: 0 0 auto;
+    color: var(--muted);
+    content: attr(data-label);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .admin-table td:first-child {
+    align-items: flex-start;
+    flex-direction: column;
+    text-align: left;
+  }
+
+  .admin-table td:first-child::before {
+    display: none;
+  }
+
+  .table-actions {
+    flex-wrap: wrap;
+  }
+
+  .admin-table__empty td {
+    display: block;
+    padding: 3rem 1.25rem;
+    text-align: center;
+  }
+
+  .admin-table__empty td::before {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-panel,
+  .insurance-create-card {
+    border-radius: var(--radius-md);
+  }
+
+  .admin-panel__header {
+    padding: 1.25rem;
+  }
+
+  .admin-action-menu,
+  .insurance-action-menu {
+    width: min(300px, calc(100vw - 2rem));
+  }
+
+  .admin-table td[data-label='Acciones'] {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-table td[data-label='Acciones']::before {
+    align-self: flex-start;
+  }
+
+  .table-actions,
+  .table-actions > .btn,
+  .table-actions > .dropdown,
+  .table-actions > .dropdown > .btn {
+    width: 100%;
+  }
+}
