@@ -1,20 +1,26 @@
-<div th:fragment="footer" class="container">
-    <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
-        <p class="col-md-4 mb-0 text-body-secondary">&copy; 2023 Vitalidapp <br> Todos los derechos reservados</p>
+<footer th:fragment="footer" class="site-footer" xmlns:th="http://www.thymeleaf.org">
+  <div class="container site-footer__grid">
+    <div class="site-footer__brand">
+      <a th:href="@{/}" aria-label="Vitalidapp, ir al inicio">
+        <img th:src="@{/img/app_logo.png}" alt="Vitalidapp">
+      </a>
+      <p>Turnos e información de salud, organizados de manera simple.</p>
+    </div>
 
-        <a href="/"
-            class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-            <img class="bi me-2" src="/img/app_logo2.png" alt="..." height="45">
-        </a>
+    <nav class="site-footer__links" aria-label="Enlaces del pie">
+      <h2>Explorá</h2>
+      <a th:href="@{/}">Inicio</a>
+      <a th:href="@{/especialidades}">Especialidades</a>
+    </nav>
 
-        <ul class="col-md-4 justify-content-end"> Contáctanos:
-            <li class="nav-item">Tel: +54 652505351</li>
-            <li class="nav-item">Correo: vitalidapp@gmail.com</li>
-        </ul>
-    </footer>
-</div>
-<script src="js/slider.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-    crossorigin="anonymous"></script>
-</body>
+    <div class="site-footer__contact">
+      <h2>Contacto</h2>
+      <a href="tel:+54652505351">+54 6525 05351</a>
+      <a href="mailto:vitalidapp@gmail.com">vitalidapp@gmail.com</a>
+    </div>
+  </div>
+
+  <div class="container site-footer__bottom">
+    <p>© Vitalidapp. Proyecto demostrativo de gestión de turnos médicos.</p>
+  </div>
+</footer>

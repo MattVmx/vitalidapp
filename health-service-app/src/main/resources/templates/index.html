@@ -1,193 +1,194 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="utf-8">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-    <link rel="stylesheet" href="/css/main.css">
-    <title>Health Service App</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+        content="Vitalidapp facilita la búsqueda de profesionales de la salud y la reserva de turnos médicos.">
+  <title>Vitalidapp | Turnos de salud simples</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+        crossorigin="anonymous">
+  <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
+<body class="site-page">
+<header th:replace="fragments/navbar :: nav_bar"></header>
 
-<body>
-
-    <!-- NAVBAR -->
-
-    <header th:replace="fragments/navbar :: nav_bar"></header>
-
-    <div th:if="${error != null}" class="card text-white bg-danger mensajeError">
-        <div class="card-body">
-            <h5 class="card-title">Error!</h5>
-            <p class="card-text" th:text="${error}"></p>
-        </div>
+<main>
+  <div class="container notification-stack" aria-live="polite">
+    <div th:if="${error != null}" class="app-alert app-alert--error" role="alert">
+      <span class="app-alert__icon" aria-hidden="true">!</span>
+      <p class="mb-0" th:text="${error}"></p>
     </div>
-
-    <div th:if="${exito != null}" class="card text-white bg-success mensajeExito">
-        <div class="card-body">
-            <h5 class="card-title">Exito!</h5>
-            <p class="card-text" th:text="${exito}"></p>
-        </div>
+    <div th:if="${exito != null}" class="app-alert app-alert--success" role="status">
+      <span class="app-alert__icon" aria-hidden="true">✓</span>
+      <p class="mb-0" th:text="${exito}"></p>
     </div>
+  </div>
 
+  <section class="hero-section">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">Tu salud, más simple</span>
+        <h1>Encontrá profesionales y reservá tu turno en minutos.</h1>
+        <p class="hero-lead">
+          Elegí la especialidad, compará opciones y organizá tus consultas desde un único lugar.
+        </p>
 
-    <!-- SLIDER -->
-
-    <section class="profesionales mb-5" id="profesionales">
-
-        <div class="container">
-            <div class="col izq">
-                <div class="slider" id="slider">
-                    <div class="slide foto1"></div>
-                    <div class="slide foto2"></div>
-                    <div class="slide foto3"></div>
-                    <div class="slide foto4"></div>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="titulo-seccion">
-                    <h2 class="text-primary fw-bold">Nuestras Especialidades</h2>
-                    <p class="text-dark">En nuestra aplicación podrás encontrar muchas especialidades como: pediatría,
-                        ginecología, clínica, cardiología, etc. </p>
-                    <p class="text-dark">Siempre estamos atentos a tus consultas y estamos mejorando para incluir
-                        incluso más especialidades en un futuro y expandirnos.</p>
-                </div>
-
-            </div>
+        <div class="hero-actions">
+          <a sec:authorize="hasRole('ROLE_PACIENTE')"
+             th:href="@{/consulta/provincia}"
+             class="btn btn-primary btn-lg">Reservar un turno</a>
+          <a sec:authorize="!isAuthenticated()"
+             th:href="@{/especialidades}"
+             class="btn btn-primary btn-lg">Buscar profesionales</a>
+          <a th:href="@{/especialidades}" class="btn btn-soft btn-lg">Ver especialidades</a>
         </div>
 
-    </section>
+        <ul class="hero-points" aria-label="Beneficios de Vitalidapp">
+          <li>
+            <span aria-hidden="true">✓</span>
+            Búsqueda por provincia y especialidad
+          </li>
+          <li>
+            <span aria-hidden="true">✓</span>
+            Reserva guiada paso a paso
+          </li>
+          <li>
+            <span aria-hidden="true">✓</span>
+            Historial de consultas centralizado
+          </li>
+        </ul>
+      </div>
 
-
-    <!-- SECTION SOBRE NOSOTROS -->
-
-
-    <div class="container card mb-5">
-        <div class="row no-gutter">
-            <div class="col-md-6 px-0">
-                <img src="/img/grupoMed.jpg" class="card-img" alt="...">
-            </div>
-
-            <div class="col-md-6 d-flex align-items-center">
-                <div class="card-body">
-                    <h1 class="text-primary fw-bold">Sobre Nosotros</h1>
-                    <p class="text-dark texto-nosotros">Somos un colectivo de profesionales de la salud auto-organizados
-                        que deseamos
-                        tener nuestra propia plataforma de provisión de servicios para pacientes.
-                        Cada profesional que se quiera sumar lo pueda hacer. Y que nos deje: su especialidad, su
-                        disponibilidad horaria, que los pacientes puedan agendar un turno con el/la
-                        profesional.
-                    </p>
-                </div>
-            </div>
-
+      <div class="hero-visual" aria-label="Profesional de la salud organizando una consulta">
+        <div class="hero-image-wrap">
+          <img th:src="@{/img/consulta.jpg}"
+               alt="Profesional de la salud completando una ficha médica"
+               class="hero-image">
         </div>
+        <div class="floating-card floating-card--top">
+          <span class="floating-card__icon" aria-hidden="true">+</span>
+          <div>
+            <strong>Atención organizada</strong>
+            <span>Todo en un mismo lugar</span>
+          </div>
+        </div>
+        <div class="floating-card floating-card--bottom">
+          <span class="status-dot" aria-hidden="true"></span>
+          <div>
+            <strong>Turnos disponibles</strong>
+            <span>Elegí día y horario</span>
+          </div>
+        </div>
+      </div>
     </div>
+  </section>
 
+  <section class="section section--light" aria-labelledby="como-funciona">
+    <div class="container">
+      <div class="section-heading">
+        <span class="eyebrow">Una experiencia sencilla</span>
+        <h2 id="como-funciona">Tu próximo turno en tres pasos</h2>
+        <p>Diseñamos un recorrido claro para que encuentres la atención que necesitás sin vueltas.</p>
+      </div>
 
-    <!-- SECTION CARACTERISTICAS -->
-
-    <div class="container marketing mb-5">
-
-        <hr class="featurette-divider divisor">
-
-        <div class="row featurette">
-            <div class="col-md-7 d-flex align-items-center">
-                <h2 class="featurette-heading fw-bold lh-1 me-4 text-primary">Calificaciones</h2>
-                <p class="lead">Podras ver el rating de que otros usuarios les ha dado a cada profesional, solo tendrás
-                    que ir a una consulta a ciegas, teniendo la seguridad de un buen servicio.</p>
-            </div>
-            <div class="col-md-5">
-                <img src="/img/rating.jpg" class="card-img" alt="...">
-            </div>
-        </div>
-
-        <hr class="featurette-divider divisor">
-
-        <div class="row featurette">
-            <div class="col-md-7 order-md-2 d-flex align-items-center">
-                <h2 class="featurette-heading fw-bold lh-1 me-4 text-primary">Historia Clínica Digital</h2>
-                <p class="lead">No deberá preocuparse más de olvidarse traer su historial clínico o que el personal de
-                    salud la pierda, ahora estarán guardadas en nuestra base de datos con el acceso restringido al
-                    profesional a cargo suyo.</p>
-            </div>
-            <div class="col-md-5 order-md-1">
-                <img src="/img/hclinica.jpg" class="card-img" alt="...">
-            </div>
-        </div>
-
-        <hr class="featurette-divider divisor">
-
-        <div class="row featurette">
-            <div class="col-md-7 d-flex align-items-center">
-                <h2 class="featurette-heading fw-bold lh-1 me-4 text-primary">Profesionales cerca tuyo</h2>
-                <p class="lead">Con médicos en cada ciudad podrás ver el servicio más cercano y elegir dependiendo de tu
-                    proximidad.</p>
-            </div>
-            <div class="col-md-5">
-                <img src="/img/map.jpg" class="card-img" alt="...">
-            </div>
-        </div>
-
-        <hr class="featurette-divider divisor">
-
-    </div><!-- /.container -->
-
-
-
-    <!-- SECTION CONTACTO -->
-
-    <div class="container card mb-5" id="contacto">
-        <div class="row no-gutter">
-            <div class="col-md-6 px-0">
-                <img src="/img/consulta.jpg" class="card-img" alt="...">
-            </div>
-
-            <div class="col-md-6" id="formulario">
-                <div class="card-body">
-                    <h2 class="card-title mb-5 text-primary fw-bold">Consúltanos</h2>
-                    <form>
-
-                        <div class="form-group mb-3">
-                            <input class="form-control" type="text" name="nombre" placeholder="Nombre" id="nombre">
-                            <p class="error">Por favor escribe tu nombre</p>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <input class="form-control" type="email" name="email" placeholder="Correo electrónico"
-                                id="email">
-                            <p class="error">Por favor escribe tu correo</p>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <textarea class="form-control" name="mensaje" placeholder="Escríbenos tu consulta"
-                                id="mensaje"></textarea>
-                            <p class="error">Por favor escribe tu mensaje</p>
-                        </div>
-
-                        <div class="form-group">
-                            <input class="form-control btn btn-outline-success" type="submit" name="enviar"
-                                value="Enviar">
-                        </div>
-
-                    </form>
-                </div>
-            </div>
-
-        </div>
+      <div class="service-grid">
+        <article class="service-card">
+          <span class="service-card__number">01</span>
+          <div class="service-card__icon" aria-hidden="true">⌕</div>
+          <h3>Buscá</h3>
+          <p>Filtrá profesionales por provincia y especialidad.</p>
+        </article>
+        <article class="service-card service-card--featured">
+          <span class="service-card__number">02</span>
+          <div class="service-card__icon" aria-hidden="true">◷</div>
+          <h3>Reservá</h3>
+          <p>Seleccioná al profesional, el día y el horario que te convengan.</p>
+        </article>
+        <article class="service-card">
+          <span class="service-card__number">03</span>
+          <div class="service-card__icon" aria-hidden="true">✓</div>
+          <h3>Gestioná</h3>
+          <p>Consultá tus turnos y mantené organizado tu historial.</p>
+        </article>
+      </div>
     </div>
+  </section>
 
-    <!-- FOOTER -->
+  <section class="section specialty-section" aria-labelledby="especialidades-titulo">
+    <div class="container split-feature">
+      <div class="split-feature__media">
+        <img th:src="@{/img/profesionales.jpg}"
+             alt="Equipo de profesionales de la salud"
+             loading="lazy">
+        <div class="image-badge">
+          <span aria-hidden="true">✦</span>
+          Profesionales por especialidad
+        </div>
+      </div>
+      <div class="split-feature__content">
+        <span class="eyebrow">Atención a tu medida</span>
+        <h2 id="especialidades-titulo">Encontrá la especialidad indicada para vos.</h2>
+        <p>
+          Explorá las opciones disponibles y elegí al profesional que mejor se adapte a tus necesidades.
+          Vitalidapp te acompaña durante todo el proceso de reserva.
+        </p>
+        <a th:href="@{/especialidades}" class="text-link">
+          Explorar especialidades <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
 
-    <div th:replace="fragments/footer :: footer"></div>
+  <section class="section section--light" aria-labelledby="beneficios-titulo">
+    <div class="container value-panel">
+      <div class="value-panel__content">
+        <span class="eyebrow">Cuidado conectado</span>
+        <h2 id="beneficios-titulo">Información clara para pacientes y profesionales.</h2>
+        <p>
+          Cada perfil accede a las herramientas que necesita: reservas e historial para pacientes,
+          y seguimiento de consultas para profesionales.
+        </p>
+        <div class="value-list">
+          <div>
+            <span class="value-list__icon" aria-hidden="true">✓</span>
+            <p><strong>Perfiles protegidos</strong><span>Accesos diferenciados según cada rol.</span></p>
+          </div>
+          <div>
+            <span class="value-list__icon" aria-hidden="true">✓</span>
+            <p><strong>Historial accesible</strong><span>La información importante, siempre ordenada.</span></p>
+          </div>
+        </div>
+      </div>
+      <div class="value-panel__media">
+        <img th:src="@{/img/grupoMed.jpg}"
+             alt="Equipo médico trabajando en conjunto"
+             loading="lazy">
+      </div>
+    </div>
+  </section>
 
-    <script src="js/jquery.js"></script>
-    <script src="js/validacion.js"></script>
-    <script src="js/slider.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+  <section class="section">
+    <div class="container">
+      <div class="contact-cta">
+        <div>
+          <span class="eyebrow eyebrow--light">¿Necesitás orientación?</span>
+          <h2>Estamos para acompañarte.</h2>
+          <p>Escribinos si tenés una consulta sobre el uso de la plataforma.</p>
+        </div>
+        <a href="mailto:vitalidapp@gmail.com" class="btn btn-light btn-lg">Contactar al equipo</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
 </body>
-
 </html>

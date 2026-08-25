@@ -32,7 +32,11 @@ public interface ProfesionalRepository extends JpaRepository<Profesional, String
     public List<Profesional> listarProfesionalPorEspecialidadesPorProvincia(@Param("provincia") Provincias provincia,
             @Param("especialidad") Especialidad especialidad);
 
-    @Query("SELECT p FROM Profesional p WHERE p.nombre LIKE %:nombre%")
+    @Query("SELECT p FROM Profesional p "
+            + "WHERE LOWER(p.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')) "
+            + "OR LOWER(p.apellido) LIKE LOWER(CONCAT('%', :nombre, '%')) "
+            + "OR LOWER(CONCAT(p.nombre, ' ', p.apellido)) LIKE LOWER(CONCAT('%', :nombre, '%')) "
+            + "OR LOWER(CONCAT(p.apellido, ' ', p.nombre)) LIKE LOWER(CONCAT('%', :nombre, '%'))")
     public List<Profesional> buscarPorNombre(@Param("nombre") String nombre);   
     
     @Query("SELECT p FROM Profesional p WHERE p.id = :id")
