@@ -173,6 +173,18 @@
   background: var(--primary-soft);
 }
 
+.specialty-list a.is-active {
+  color: #fff !important;
+  background: var(--primary);
+  box-shadow: 0 7px 16px rgba(36, 87, 214, 0.2);
+}
+
+.specialty-list a.is-active:hover,
+.specialty-list a.is-active:focus {
+  color: #fff;
+  background: #1d49b8;
+}
+
 .specialty-list__all {
   margin-bottom: 0.35rem;
   color: var(--primary) !important;
@@ -444,6 +456,18 @@ html[data-theme='dark'] .professional-search input {
 
 html[data-theme='dark'] .professional-card__profile img {
   border-color: var(--surface);
+}
+
+html[data-theme='dark'] .specialty-list a.is-active {
+  color: #07152e !important;
+  background: #86a0ff;
+  box-shadow: 0 7px 18px rgba(77, 112, 235, 0.22);
+}
+
+html[data-theme='dark'] .specialty-list a.is-active:hover,
+html[data-theme='dark'] .specialty-list a.is-active:focus {
+  color: #061127;
+  background: #9aafff;
 }
 
 html[data-theme='dark'] .directory-empty {

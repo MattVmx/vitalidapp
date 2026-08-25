@@ -42,6 +42,7 @@ public class PortalControlador {
 
         //modelo.put("exito", "La lista de profesionales se muestra a continuación");
         modelo.put("especialidades", Especialidad.values());
+        modelo.put("especialidadSeleccionada", null);
 
         return "especialidades.html";
 
@@ -53,6 +54,8 @@ public String listarProfesionalPorNombre(String nombre, ModelMap modelo){
     List<Profesional> profesional = profesionalService.listarPorNombre(nombre);
     modelo.addAttribute("profesionales", profesional);
     modelo.put("especialidades", Especialidad.values());
+    modelo.put("especialidadSeleccionada", null);
+    modelo.put("busqueda", nombre);
 
     return "especialidades.html";
 }
@@ -63,6 +66,7 @@ public String listarPorEspecialidad(@PathVariable Especialidad especialidad, Mod
     List<Profesional> profesional = profesionalService.listarPorEspecialidad(especialidad);
     modelo.addAttribute("profesionales", profesional);
     modelo.put("especialidades", Especialidad.values());
+    modelo.put("especialidadSeleccionada", especialidad);
 
     return "especialidades.html";
 }

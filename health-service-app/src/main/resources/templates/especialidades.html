@@ -48,12 +48,17 @@
         </div>
 
         <nav class="specialty-list" aria-label="Filtrar profesionales por especialidad">
-          <a th:href="@{/especialidades}+'#listado'" class="specialty-list__all">
+          <a th:href="@{/especialidades}"
+             class="specialty-list__all"
+             th:classappend="${especialidadSeleccionada == null ? ' is-active' : ''}"
+             th:attr="aria-current=${especialidadSeleccionada == null ? 'true' : null}">
             Todas las especialidades
           </a>
           <a th:each="especialidad : ${especialidades}"
-             th:href="@{/especialidad/profesionales/__${especialidad}__}+'#listado'"
-             class="specialty-list__item">
+             th:href="@{/especialidad/profesionales/__${especialidad}__}"
+             class="specialty-list__item"
+             th:classappend="${especialidadSeleccionada == especialidad ? ' is-active' : ''}"
+             th:attr="aria-current=${especialidadSeleccionada == especialidad ? 'true' : null}">
             <span th:text="${#strings.capitalizeWords(especialidad.toString().replaceAll('_', ' ').toLowerCase())}"></span>
             <span aria-hidden="true">→</span>
           </a>
@@ -83,6 +88,7 @@
                    type="search"
                    name="nombre"
                    placeholder="Buscar por nombre"
+                   th:value="${busqueda}"
                    autocomplete="off">
             <button class="btn btn-primary" type="submit">Buscar</button>
           </form>
@@ -131,7 +137,7 @@
           <span aria-hidden="true">⌕</span>
           <h3>No encontramos profesionales</h3>
           <p>Probá con otro nombre o elegí una especialidad diferente.</p>
-          <a th:href="@{/especialidades}+'#listado'" class="btn btn-soft">Ver todos</a>
+          <a th:href="@{/especialidades}" class="btn btn-soft">Ver todos</a>
         </div>
       </div>
     </div>

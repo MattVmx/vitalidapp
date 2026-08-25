@@ -90,7 +90,8 @@ public class ProfesionalService {
     public List<Profesional> listarPorNombre(String nombre) {
         List<Profesional> profesionales = new ArrayList();
 
-        profesionales = profesionalRepository.buscarPorNombre(nombre);
+        String nombreNormalizado = nombre == null ? "" : nombre.trim();
+        profesionales = profesionalRepository.buscarPorNombre(nombreNormalizado);
 
         return profesionales;
     }
