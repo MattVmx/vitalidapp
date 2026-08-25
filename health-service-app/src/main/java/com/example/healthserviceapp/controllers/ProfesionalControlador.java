@@ -1,6 +1,5 @@
 package com.example.healthserviceapp.controllers;
 
-import com.example.healthserviceapp.Exceptions.MiException;
 import com.example.healthserviceapp.entity.Disponibilidad;
 import com.example.healthserviceapp.entity.Profesional;
 import com.example.healthserviceapp.entity.Usuario;
@@ -13,7 +12,6 @@ import com.example.healthserviceapp.service.ProfesionalService;
 import com.example.healthserviceapp.service.UsuarioService;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,14 +61,8 @@ public class ProfesionalControlador {
     }
 
     @GetMapping("/turno")
-    public String reservarTurno(ModelMap modelo) throws MiException {
-
-        List<Profesional> profesionales = profesionalServicio.listarProfesionales();
-        modelo.addAttribute("profesionales", profesionales);
-
-        modelo.put("especialidades", Especialidad.values());
-
-        return "turno.html";
+    public String redirigirTurnos() {
+        return "redirect:/consulta/paciente";
     }
 
     @PostMapping("/registro")
@@ -103,5 +95,4 @@ public class ProfesionalControlador {
         }
         return "redirect:/";
     }
-
 }
