@@ -1,5 +1,6 @@
 package com.example.healthserviceapp.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,39 +23,52 @@ public class ObraSocialControlador {
     private ObraSocialService obraSocialService;
 
     @GetMapping("")
-    public String listado(ModelMap model){
+    public String listado(ModelMap model) {
         List<ObraSocial> obraSociales = obraSocialService.listarObrasSociales();
         model.addAttribute("obraSociales", obraSociales);
+        model.put("busqueda", "");
         return "obras_sociales.html";
     }
 
     @GetMapping("/buscar")
-    public String buscarPorEmail(String nombre, ModelMap model) {
-        ObraSocial obraSocial = obraSocialService.buscarPorNombre(nombre);
-        model.addAttribute("obraSociales", obraSocial); 
+    public String buscarPorNombre(String nombre, ModelMap model) {
+        String busqueda = nombre == null ? "" : nombre.trim();
+        List<ObraSocial> obraSociales = new ArrayList<>();
+
+        if (busqueda.isEmpty()) {
+            obraSociales = obraSocialService.listarObrasSociales();
+        } else {
+            ObraSocial obraSocial = obraSocialService.buscarPorNombre(busqueda);
+            if (obraSocial != null) {
+                obraSociales.add(obraSocial);
+            }
+        }
+
+        model.addAttribute("obraSociales", obraSociales);
+        model.put("busqueda", busqueda);
         return "obras_sociales.html";
     }
 
     @GetMapping("/eliminar/{id}")
-    public String bajaUsuario(@PathVariable String id, ModelMap modelo) {
+    public String eliminar(@PathVariable String id, ModelMap modelo) {
         obraSocialService.eliminarObraSocial(id);
         return "redirect:/obras_sociales";
     }
 
     @GetMapping("/modificarPrecio")
-    public String modificar(@RequestParam String id, @RequestParam Double precio){
+    public String modificarPrecio(@RequestParam String id, @RequestParam Double precio) {
         obraSocialService.modificarPrecio(id, precio);
         return "redirect:/obras_sociales";
     }
 
     @GetMapping("/modificarNombre")
-    public String modificar(@RequestParam String id, @RequestParam String nombre){
+    public String modificarNombre(@RequestParam String id, @RequestParam String nombre) {
         obraSocialService.modificarNombre(id, nombre);
         return "redirect:/obras_sociales";
     }
 
     @GetMapping("/crear")
-    public String crear(@RequestParam String nombre, @RequestParam Double precio){
+    public String crear(@RequestParam String nombre, @RequestParam Double precio) {
         obraSocialService.crearObraSocial(nombre, precio);
         return "redirect:/obras_sociales";
     }
