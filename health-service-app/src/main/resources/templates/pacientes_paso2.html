@@ -1,72 +1,137 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>historial de los pacientes</title>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-  <link rel="stylesheet" href="/css/error.css">
-  <link rel="stylesheet" href="/css/pacientes.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Revisá la historia clínica y registrá diagnósticos en Vitalidapp.">
+  <title>Historia clínica | Vitalidapp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ"
+        crossorigin="anonymous">
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="stylesheet" th:href="@{/css/historial.css}">
 </head>
+<body class="records-page-body">
+<header th:replace="fragments/navbar :: nav_bar"></header>
 
-<body>
-  <hr>
-  <a href="/consulta/paciente" class="btn btn-primary">Anterior</a>
-  <a href="/" class="btn btn-primary">Volver a inicio</a>
-
+<main class="records-page">
   <div class="container">
-    <div class="row">
-      <div class="card border-success mb-3" th:each="iterador : ${paciente}"
-        style="padding-bottom: 10px;margin-bottom: 20px;padding-top: 5px;max-width: 60rem;margin-left: auto; margin-right: auto;">
-        <h2 class="card-header bg-transparent border-success">Información del paciente</h2>
-        <p class="card-text" th:text="${'Sexo: ' + iterador.sexo}" style="margin-top: 5px;"></p>
-        <p class="card-text" th:text="${'Fecha de nacimiento: ' + iterador.fechaNacimiento}"></p>
-        <p class="card-text" th:text="${'Domicilio: ' + iterador.domicilio}"></p>
-        <p class="card-text" th:text="${'Nombre: ' + iterador.nombre + ' ' + iterador.apellido}"></p>
-        <p class="card-text" th:text="${'DNI: ' + iterador.dni}"></p>
-      </div>
+    <nav class="records-breadcrumb" aria-label="Navegación de historia clínica">
+      <a th:href="@{/consulta/paciente}"><span aria-hidden="true">←</span> Cambiar paciente</a>
+      <span aria-hidden="true">/</span>
+      <span>Historia clínica</span>
+    </nav>
 
-      <div class="card border-primary mb-3" style="max-width: 25rem; margin: 0 20px;background-color: #e9f5fb;"
-        th:each="iterador : ${consulta}">
-        <div class="card-header" th:text="${'Consulta del dia ' + iterador.fecha}"></div>
-        <div class="card-body">
-          <h5 class="card-title">Información de Consulta</h5>
-          </p>
-          <p class="card-text"
-            th:text="${'Profesional: ' + iterador.profesional.nombre + ' ' + iterador.profesional.apellido}"></p>
-          <p class="card-title" th:text="${'De especialidad ' + iterador.profesional.especialidad}"></p>
-          </p>
-          <p class="card-text">Diagnostico:</p>
-          <form method="GET" th:action="@{/consulta/diagnostico}"
-            th:if="${iterador.diagnostico == null and iterador.profesional.id == session.usuariosession.getId()} ">
-            <div class="form-group my-3">
-              <textarea type="form-control" name="diagnostico" placeholder="Ingrese el diagnostico del paciente"
-                style="width: 100%;" required></textarea>
-            </div>
-            <input hidden th:value="${iterador.id}" name="id">
-            <input hidden th:value="${iterador.paciente.id}" name="idPaciente">
-            <button type="submit" class="btn btn-primary mt-3 botones next_button"
-              style="margin-left: auto; margin-right: auto;">Enviar</button>
-          </form>
-          <div th:if="${iterador.diagnostico != null}">
-            <p th:text="${iterador.diagnostico}"></p>
-          </div>
-          <div th:if="${iterador.profesional.id != session.usuariosession.getId() and iterador.diagnostico == null}">
-            <p>El diagnostico está vacio y es de otro profesional por lo que no tiene acceso a modificarla</p>
-          </div>
+    <section class="patient-overview" th:each="iterador : ${paciente}">
+      <div class="patient-overview__identity">
+        <span class="patient-overview__avatar" aria-hidden="true"
+              th:text="${#strings.substring(iterador.nombre, 0, 1) + #strings.substring(iterador.apellido, 0, 1)}">ST</span>
+        <div>
+          <span class="section-kicker">Información del paciente</span>
+          <h1 th:text="${iterador.nombre + ' ' + iterador.apellido}">Sofía Torres</h1>
+          <p th:text="${iterador.domicilio}">Mar del Plata, Buenos Aires</p>
         </div>
       </div>
-    </div>
+
+      <dl class="patient-overview__data">
+        <div>
+          <dt>DNI</dt>
+          <dd th:text="${iterador.dni}">30123456</dd>
+        </div>
+        <div>
+          <dt>Fecha de nacimiento</dt>
+          <dd th:text="${iterador.fechaNacimiento}">1990-08-24</dd>
+        </div>
+        <div>
+          <dt>Sexo</dt>
+          <dd th:text="${#strings.capitalize(iterador.sexo.toString().toLowerCase())}">Femenino</dd>
+        </div>
+      </dl>
+    </section>
+
+    <header class="records-section-heading">
+      <div>
+        <span class="section-kicker">Seguimiento médico</span>
+        <h2>Historial de consultas</h2>
+      </div>
+      <span class="records-section-heading__count" th:text="${#lists.size(consulta) + ' consultas'}">1 consulta</span>
+    </header>
+
+    <section class="records-empty" th:if="${#lists.isEmpty(consulta)}">
+      <span class="records-empty__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M9 5h6M9 9h6M9 13h4M7 3h10a2 2 0 0 1 2 2v16l-7-4-7 4V5a2 2 0 0 1 2-2Z"/></svg>
+      </span>
+      <h3>No hay consultas registradas</h3>
+      <p>Este paciente todavía no cuenta con atenciones en su historial.</p>
+    </section>
+
+    <section class="clinical-grid" th:unless="${#lists.isEmpty(consulta)}">
+      <article class="clinical-card" th:each="iterador : ${consulta}">
+        <header class="clinical-card__header">
+          <div>
+            <span class="clinical-card__date">Consulta</span>
+            <h3 th:text="${iterador.fecha + ' · ' + iterador.horario + ':00 hs'}">2026-08-26 · 14:00 hs</h3>
+          </div>
+          <span class="clinical-card__specialty"
+                th:text="${#strings.capitalizeWords(iterador.profesional.especialidad.toString().replaceAll('_', ' ').toLowerCase())}">
+            Cardiología
+          </span>
+        </header>
+
+        <div class="clinical-card__professional">
+          <span aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9 3v6a3 3 0 0 0 6 0V3M7 3h4M13 3h4M12 12v2a5 5 0 0 0 10 0v-1M19 10a3 3 0 1 0 0 6"/></svg>
+          </span>
+          <div>
+            <small>Profesional</small>
+            <strong th:text="${iterador.profesional.nombre + ' ' + iterador.profesional.apellido}">Laura Fernández</strong>
+          </div>
+        </div>
+
+        <section class="diagnosis-panel">
+          <span class="diagnosis-panel__label">Diagnóstico</span>
+
+          <form method="GET"
+                th:action="@{/consulta/diagnostico}"
+                class="diagnosis-form"
+                th:if="${iterador.diagnostico == null and iterador.profesional.id == session.usuariosession.getId()}">
+            <label th:for="${'diagnostico-' + iterador.id}">Registrá las observaciones de esta consulta</label>
+            <textarea class="form-control"
+                      th:id="${'diagnostico-' + iterador.id}"
+                      name="diagnostico"
+                      rows="5"
+                      maxlength="1500"
+                      placeholder="Escribí el diagnóstico y las indicaciones para el paciente"
+                      required></textarea>
+            <input type="hidden" th:value="${iterador.id}" name="id">
+            <input type="hidden" th:value="${iterador.paciente.id}" name="idPaciente">
+            <div class="diagnosis-form__actions">
+              <small>La información quedará disponible en la historia clínica.</small>
+              <button type="submit" class="btn btn-primary">Guardar diagnóstico</button>
+            </div>
+          </form>
+
+          <div class="diagnosis-copy" th:if="${iterador.diagnostico != null}">
+            <p th:text="${iterador.diagnostico}">Control realizado. Se recomienda seguimiento anual.</p>
+          </div>
+
+          <div class="diagnosis-notice"
+               th:if="${iterador.profesional.id != session.usuariosession.getId() and iterador.diagnostico == null}">
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.8 2.4 18a2 2 0 0 0 1.75 3h15.7a2 2 0 0 0 1.75-3L13.7 3.8a2 2 0 0 0-3.4 0Z"/></svg>
+            </span>
+            <p>El diagnóstico está pendiente y solo puede completarlo el profesional responsable de esta consulta.</p>
+          </div>
+        </section>
+      </article>
+    </section>
   </div>
+</main>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-    crossorigin="anonymous"></script>
-
-  <div th:replace="fragments/footer :: footer"></div>
+<footer th:replace="fragments/footer :: footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
 </body>
-
 </html>
