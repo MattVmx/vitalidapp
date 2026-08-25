@@ -187,20 +187,6 @@ health-service-app/
 └── src/test/           Automated smoke tests
 ```
 
-## Modernization status
-
-- [x] Zero-configuration H2 demo profile
-- [x] Deterministic demo accounts and sample professionals
-- [x] Role-based authorization for patient, professional and administrator routes
-- [x] End-to-end appointment, diagnosis and rating flows
-- [x] Responsive UI and reusable visual system
-- [x] Light and dark themes
-- [x] Accessible navigation, forms, empty states and error pages
-- [x] Automated CI smoke tests
-- [ ] Public hosted demo
-- [ ] Password recovery and email notifications
-- [ ] Broader controller and service test coverage
-
 ## Demo scope
 
 Vitalidapp is a portfolio case study and not a production medical platform. The demo uses fictional data and does not provide the regulatory, privacy, auditing or operational safeguards required for real healthcare information.
