@@ -1,86 +1,198 @@
 <!DOCTYPE html>
-
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="utf-8">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-  <link rel="stylesheet" href="/css/main.css">
-  <title>Especialidades</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Administración de obras sociales y coberturas de Vitalidapp.">
+  <title>Obras sociales | Vitalidapp</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ"
+        crossorigin="anonymous">
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
 </head>
+<body class="admin-page-body">
+<header th:replace="fragments/navbar :: nav_bar"></header>
 
-<body>
-  <!-- NAVBAR -->
-  <header th:replace="fragments/navbar :: nav_bar"></header>
-  <!-- MAIN -->
-  <h1 class="text-muted text-center my-5">Lista de obras sociales</h1>
-
-  <div class="container mb-5 ms-auto col-5">
-    <form class="d-flex" role="search" th:action="@{/obras_sociales/crear}">
-      <input type="text" name="nombre" placeholder="XYZ" style="margin-right: 10px;" required>
-      <input type="number" name="precio" placeholder="12.3" style="margin-right: 10px;" min="0" step="any" required>
-      <button class="btn btn-outline-primary" type="submit">Crear nueva Obra Social</button>
-    </form>
-  </div>
-
-  <div class="container mb-5 ms-auto col-3">
-    <form class="d-flex" role="search" th:action="@{/obras_sociales/buscar}">
-      <input class="form-control me-2" type="search" name="nombre" placeholder="Buscar por nombre" aria-label="Search">
-      <button class="btn btn-outline-primary" type="submit">Buscar</button>
-    </form>
-  </div>
-
+<main class="admin-page">
   <div class="container">
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">ID</th>
-          <th scope="col">Nombre</th>
-          <th scope="col">Precio</th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody th:each="obraSocial : ${obraSociales}">
-        <tr>
-          <th scope="row" th:text="${obraSocial.id}"></th>
-          <td th:text="${obraSocial.nombre}"></td>
-          <td th:text="${obraSocial.precio}"></td>
-          <td>
-            <a class="me-3 btn btn-warning" th:href="@{/obras_sociales/eliminar/__${obraSocial.id}__}">Eliminar</a>
-            <button class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Modificar
-              precio</button>
-            <ul class="dropdown-menu">
-              <div>
-                <form class="d-flex p-3" th:action="@{/obras_sociales/modificarPrecio}">
-                  <input class="form-control" type="text" name="id" th:value="${obraSocial.id}" hidden>
-                  <input class="form-control" type="number" name="precio" th:value="${obraSocial.precio}" step="any">
-                  <button class="btn btn-outline-primary" type="submit">Guardar</button>
-                </form>
-              </div>
-            </ul>
-            <button class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Modificar
-              nombre</button>
-            <ul class="dropdown-menu">
-              <div>
-                <form class="d-flex p-3" th:action="@{/obras_sociales/modificarNombre}">
-                  <input class="form-control" type="text" name="id" th:value="${obraSocial.id}" hidden>
-                  <input class="form-control" type="text" name="nombre" th:value="${obraSocial.nombre}">
-                  <button class="btn btn-outline-primary" type="submit">Guardar</button>
-                </form>
-              </div>
-            </ul>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <!-- FOOTER -->
-  <div th:replace="fragments/footer :: footer"></div>
-  <!-- SCRIPT -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-    crossorigin="anonymous"></script>
-</body>
+    <nav class="admin-breadcrumb" aria-label="Navegación administrativa">
+      <a th:href="@{/admin/dashboard}"><span aria-hidden="true">←</span> Usuarios</a>
+      <span aria-hidden="true">/</span>
+      <span>Obras sociales</span>
+    </nav>
 
+    <header class="admin-heading admin-heading--compact">
+      <div>
+        <span class="eyebrow">Configuración</span>
+        <h1>Obras sociales</h1>
+        <p>Administrá las coberturas disponibles y el importe que se descuenta en cada consulta.</p>
+      </div>
+    </header>
+
+    <section class="insurance-layout">
+      <aside class="insurance-create-card">
+        <span class="insurance-create-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        </span>
+        <span class="section-kicker">Nueva cobertura</span>
+        <h2>Agregar obra social</h2>
+        <p>Ingresá el nombre y el importe cubierto por consulta.</p>
+
+        <form th:action="@{/obras_sociales/crear}" method="GET" class="insurance-create-form">
+          <div class="admin-field">
+            <label for="insurance-name">Nombre</label>
+            <input id="insurance-name"
+                   class="form-control"
+                   type="text"
+                   name="nombre"
+                   placeholder="Ej.: OSDE"
+                   maxlength="80"
+                   required>
+          </div>
+          <div class="admin-field">
+            <label for="insurance-price">Importe cubierto</label>
+            <div class="money-field">
+              <span aria-hidden="true">$</span>
+              <input id="insurance-price"
+                     class="form-control"
+                     type="number"
+                     name="precio"
+                     placeholder="0,00"
+                     min="0"
+                     step="0.01"
+                     required>
+            </div>
+            <small>Este valor se descuenta del precio de la consulta.</small>
+          </div>
+          <button class="btn btn-primary btn-lg" type="submit">Crear obra social</button>
+        </form>
+      </aside>
+
+      <section class="admin-panel insurance-panel">
+        <header class="admin-panel__header">
+          <div>
+            <span class="section-kicker">Coberturas</span>
+            <h2>Listado disponible</h2>
+            <small th:text="${#lists.size(obraSociales) + (#lists.size(obraSociales) == 1 ? ' resultado' : ' resultados')}">0 resultados</small>
+          </div>
+
+          <form class="admin-search" role="search" th:action="@{/obras_sociales/buscar}" method="GET">
+            <label class="visually-hidden" for="insurance-search">Buscar obra social por nombre</label>
+            <span class="admin-search__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+            </span>
+            <input id="insurance-search"
+                   class="form-control"
+                   type="search"
+                   name="nombre"
+                   th:value="${busqueda}"
+                   placeholder="Buscar por nombre"
+                   autocomplete="off">
+            <button class="btn btn-primary" type="submit">Buscar</button>
+            <a th:if="${busqueda != null and !#strings.isEmpty(busqueda)}"
+               th:href="@{/obras_sociales}"
+               class="btn btn-outline-secondary">Limpiar</a>
+          </form>
+        </header>
+
+        <div class="admin-table-shell">
+          <table class="admin-table insurance-table">
+            <thead>
+              <tr>
+                <th scope="col">Obra social</th>
+                <th scope="col">Identificador</th>
+                <th scope="col">Importe cubierto</th>
+                <th scope="col" class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="obraSocial : ${obraSociales}">
+                <td data-label="Obra social">
+                  <div class="insurance-name-cell">
+                    <span aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                    </span>
+                    <strong th:text="${obraSocial.nombre}">OSDE</strong>
+                  </div>
+                </td>
+                <td data-label="Identificador">
+                  <code th:text="${obraSocial.id}">obra-social-id</code>
+                </td>
+                <td data-label="Importe cubierto">
+                  <strong class="coverage-amount" th:text="${'$' + obraSocial.precio}">$5000</strong>
+                </td>
+                <td data-label="Acciones">
+                  <div class="table-actions">
+                    <div class="dropdown">
+                      <button class="btn btn-sm btn-outline-primary dropdown-toggle"
+                              type="button"
+                              data-bs-toggle="dropdown"
+                              aria-expanded="false">Editar</button>
+                      <div class="dropdown-menu admin-action-menu insurance-action-menu dropdown-menu-end">
+                        <div class="insurance-edit-group">
+                          <form th:action="@{/obras_sociales/modificarNombre}" method="GET">
+                            <input type="hidden" name="id" th:value="${obraSocial.id}">
+                            <label th:for="${'nombre-' + obraSocial.id}">Nombre</label>
+                            <input class="form-control"
+                                   th:id="${'nombre-' + obraSocial.id}"
+                                   type="text"
+                                   name="nombre"
+                                   th:value="${obraSocial.nombre}"
+                                   maxlength="80"
+                                   required>
+                            <button class="btn btn-primary btn-sm" type="submit">Guardar nombre</button>
+                          </form>
+
+                          <form th:action="@{/obras_sociales/modificarPrecio}" method="GET">
+                            <input type="hidden" name="id" th:value="${obraSocial.id}">
+                            <label th:for="${'precio-' + obraSocial.id}">Importe cubierto</label>
+                            <div class="money-field money-field--compact">
+                              <span aria-hidden="true">$</span>
+                              <input class="form-control"
+                                     th:id="${'precio-' + obraSocial.id}"
+                                     type="number"
+                                     name="precio"
+                                     th:value="${obraSocial.precio}"
+                                     min="0"
+                                     step="0.01"
+                                     required>
+                            </div>
+                            <button class="btn btn-primary btn-sm" type="submit">Guardar importe</button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+
+                    <a class="btn btn-sm btn-outline-danger"
+                       th:href="@{/obras_sociales/eliminar/{id}(id=${obraSocial.id})}"
+                       onclick="return confirm('¿Seguro que querés eliminar esta obra social?')">Eliminar</a>
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="admin-table__empty" th:if="${#lists.isEmpty(obraSociales)}">
+                <td colspan="4">
+                  <span aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                  </span>
+                  <strong>No encontramos obras sociales</strong>
+                  <p>Revisá el nombre ingresado o limpiá la búsqueda para volver al listado.</p>
+                  <a th:href="@{/obras_sociales}" class="btn btn-outline-primary btn-sm">Ver todas</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </div>
+</main>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
+</body>
 </html>
