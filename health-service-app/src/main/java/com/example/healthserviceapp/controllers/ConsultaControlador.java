@@ -60,7 +60,7 @@ public class ConsultaControlador {
     @GetMapping("/diagnostico")
     public String darDiagnostico(ModelMap modelo, @RequestParam String id, String diagnostico, @RequestParam String idPaciente) {
         System.out.println("diagnostico: " + diagnostico + " id consulta: " + id + " id paciente: " + idPaciente);
-        consultaService.ingresarDiagnostico(id, diagnostico);
+        consultaService.ingresarDiagnostico(id, diagnostico, idPaciente);
         modelo.addAttribute("consulta", consultaService.listarHistorial(idPaciente));
         modelo.addAttribute("paciente", pacienteService.listarUnPaciente(idPaciente));
         return "pacientes_paso2.html";
@@ -161,6 +161,7 @@ public class ConsultaControlador {
         return "consulta_paciente.html";
     }
     
+    @PreAuthorize("hasAnyRole('ROLE_PACIENTE')")
     @PostMapping("/calificar/{id}")
     public String guardarCalificacion(@PathVariable String id, @RequestParam int calificacion, ModelMap modelo){
         consultaService.guardarCalificacion(id, calificacion);

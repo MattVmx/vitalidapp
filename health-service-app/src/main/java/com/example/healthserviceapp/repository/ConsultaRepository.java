@@ -1,6 +1,7 @@
 package com.example.healthserviceapp.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +14,13 @@ import com.example.healthserviceapp.entity.Profesional;
 
 @Repository
 public interface ConsultaRepository extends JpaRepository<Consulta, String> {
+    Optional<Consulta> findByIdAndPacienteId(String id, String pacienteId);
+
+    Optional<Consulta> findByIdAndProfesionalId(String id, String profesionalId);
+
+    List<Consulta> findByPacienteIdAndProfesionalIdOrderByFechaAscHorarioAsc(
+            String pacienteId, String profesionalId);
+
     @Query("SELECT c.fecha FROM Consulta c WHERE c.profesional = :profesional GROUP BY c.fecha HAVING COUNT(*) = :nTurnos")
     public List<String> listarConsultasPorProfesionalAgrupadoPorFecha(@Param("profesional") Profesional profesional, @Param("nTurnos") Long nTurnos);
 

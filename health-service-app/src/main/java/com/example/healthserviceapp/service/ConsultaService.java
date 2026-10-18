@@ -6,13 +6,20 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.example.healthserviceapp.entity.Consulta;
 import com.example.healthserviceapp.entity.Paciente;
 import com.example.healthserviceapp.entity.Profesional;
+import com.example.healthserviceapp.entity.Usuario;
+import com.example.healthserviceapp.enums.Rol;
 import com.example.healthserviceapp.repository.ConsultaRepository;
 import com.example.healthserviceapp.repository.PacienteRepository;
 import com.example.healthserviceapp.repository.ProfesionalRepository;
+import com.example.healthserviceapp.repository.UsuarioRepository;
 
 @Service
 public class ConsultaService {
@@ -25,26 +32,36 @@ public class ConsultaService {
     @Autowired
     private PacienteRepository pacienteRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     @Transactional(readOnly = true)
     public List<Consulta> listarHistorial(String id) {
-        return consultaRepository.listarConsulta(id);
+        Usuario profesional = usuarioActual(Rol.PROFESIONAL);
+        List<Consulta> historial = consultaRepository.findByPacienteIdAndProfesionalIdOrderByFechaAscHorarioAsc(
+                id, profesional.getId());
+        if (historial.isEmpty()) {
+            throw accesoDenegado();
+        }
+        return historial;
     }
 
     @Transactional
-    public void ingresarDiagnostico(String id, String diagnostico) {
-
-        Optional<Consulta> resp = consultaRepository.findById(id);
-       
-        Consulta consulta = new Consulta();
-        if (resp.isPresent()) {
-            consulta = resp.get();
-            consulta.setDiagnostico(diagnostico);
-            consultaRepository.save(consulta);
+    public void ingresarDiagnostico(String id, String diagnostico, String idPaciente) {
+        Usuario profesional = usuarioActual(Rol.PROFESIONAL);
+        Consulta consulta = consultaRepository.findByIdAndProfesionalId(id, profesional.getId())
+                .orElseThrow(this::accesoDenegado);
+        // Ambos identificadores del formulario deben referirse a la misma consulta.
+        if (!consulta.getPaciente().getId().equals(idPaciente)) {
+            throw accesoDenegado();
         }
+        consulta.setDiagnostico(diagnostico);
+        consultaRepository.save(consulta);
     }
 
     @Transactional(readOnly = true)
     public List<Paciente> listarPacientes(String id) {
+        verificarIdentidad(id, Rol.PROFESIONAL);
         return consultaRepository.listarPacientesPorProfesional(id);
     }    
 
@@ -60,6 +77,7 @@ public class ConsultaService {
 
     @Transactional
     public void guardarConsulta(String idProfesional, String idPaciente, String fecha, Integer horario) {
+        verificarIdentidad(idPaciente, Rol.PACIENTE);
         Optional<Profesional> respuestaProfesional = profesionalRepository.findById(idProfesional);
         Optional<Paciente> respuestaPaciente = pacienteRepository.findById(idPaciente);
         if (respuestaProfesional.isPresent() && respuestaPaciente.isPresent()) {
@@ -79,28 +97,21 @@ public class ConsultaService {
 
     @Transactional(readOnly = true)
     public List<Consulta> listarConsulta(String id) {
+        verificarIdentidad(id, Rol.PACIENTE);
         return consultaRepository.listarConsulta(id);
     }
 
     @Transactional
     public void eliminar(String id) {
-        Optional<Consulta> resp = consultaRepository.findById(id);
-        Consulta consulta = new Consulta();
-        if (resp.isPresent()) {
-            consulta = resp.get();
-            consultaRepository.delete(consulta);
-        }
+        Consulta consulta = consultaDelPaciente(id);
+        consultaRepository.delete(consulta);
     }
 
     @Transactional
     public void guardarCalificacion(String id, Integer calificacion) {
-        Optional<Consulta> resp = consultaRepository.findById(id);
-        Consulta consulta = new Consulta();
-        if (resp.isPresent()) {
-            consulta = resp.get();
-            consulta.setCalificacion(calificacion);
-            consultaRepository.save(consulta);
-        }
+        Consulta consulta = consultaDelPaciente(id);
+        consulta.setCalificacion(calificacion);
+        consultaRepository.save(consulta);
     }
 
     @Transactional(readOnly = true)
@@ -112,12 +123,41 @@ public class ConsultaService {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Consulta buscarConsulta(String id) {
-        Optional<Consulta> resp = consultaRepository.findById(id);
-        if (resp.isPresent()) {
-            return resp.get();
+        return consultaDelPaciente(id);
+    }
+
+    private Consulta consultaDelPaciente(String id) {
+        Usuario paciente = usuarioActual(Rol.PACIENTE);
+        return consultaRepository.findByIdAndPacienteId(id, paciente.getId())
+                .orElseThrow(this::accesoDenegado);
+    }
+
+    private void verificarIdentidad(String id, Rol rol) {
+        if (!usuarioActual(rol).getId().equals(id)) {
+            throw accesoDenegado();
         }
-        return null;
+    }
+
+    private Usuario usuarioActual(Rol rol) {
+        Authentication autenticacion = SecurityContextHolder.getContext().getAuthentication();
+        if (autenticacion == null || !autenticacion.isAuthenticated()
+                || autenticacion instanceof AnonymousAuthenticationToken) {
+            throw accesoDenegado();
+        }
+        // La identidad proviene de Spring Security, nunca del id recibido o del perfil en sesión.
+        Usuario usuario = usuarioRepository.buscarPorEmail(autenticacion.getName());
+        if (usuario == null || !Boolean.TRUE.equals(usuario.getActivo()) || usuario.getRol() != rol
+                || autenticacion.getAuthorities().stream()
+                    .noneMatch(permiso -> permiso.getAuthority().equals("ROLE_" + rol.name()))) {
+            throw accesoDenegado();
+        }
+        return usuario;
+    }
+
+    private AccessDeniedException accesoDenegado() {
+        // Misma respuesta para recursos inexistentes y ajenos, sin revelar su existencia.
+        return new AccessDeniedException("No tenés permisos para acceder a esta consulta.");
     }
 }
