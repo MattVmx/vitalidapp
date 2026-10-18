@@ -105,7 +105,7 @@
                             <p class="text-success opcionSeleccionada" th:text="'Usted selecciono la especialidad de ' + ${profesional.especialidad}"></p>
                             <p class="text-success opcionSeleccionada" th:text="'Usted selecciono el profesional ' + ${profesional.nombre + ' ' + profesional.apellido}"></p>
                             <p class="text-success" th:text="'Usted selecciono el fecha ' + ${fecha}"></p>
-                            <form method="GET" th:action="@{/consulta/reservar}">
+                            <form method="POST" th:action="@{/consulta/reservar}">
                                 <input name="idProfesional" th:value="${profesional.id}" hidden>
                                 <input name="fecha" th:value="${fecha}" hidden>
                                 <h1>Horarios disponibles</h1>

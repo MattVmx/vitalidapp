@@ -156,11 +156,10 @@
             <a th:href="@{/admin/dashboard}" class="btn btn-login">Dashboard</a>
           </div>
 
-          <a th:if="${session.usuariosession != null}"
-             th:href="@{/logout}"
-             class="btn btn-logout">
-            Cerrar sesión
-          </a>
+          <form th:if="${session.usuariosession != null}"
+                th:action="@{/logout}" method="POST">
+            <button type="submit" class="btn btn-logout">Cerrar sesión</button>
+          </form>
 
           <div class="dropdown" th:if="${session.usuariosession == null}">
             <button class="btn btn-primary dropdown-toggle"

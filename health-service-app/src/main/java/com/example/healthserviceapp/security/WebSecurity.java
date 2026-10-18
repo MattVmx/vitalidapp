@@ -70,9 +70,7 @@ protected void configure(HttpSecurity http) throws Exception {
             .logoutUrl("/logout")
             .invalidateHttpSession(true)
             .logoutSuccessUrl("/")
-            .permitAll()
-        .and()
-        .csrf()
-            .disable();
+            .permitAll();
+        // Se conserva la protección CSRF predeterminada de Spring Security.
 }
 }

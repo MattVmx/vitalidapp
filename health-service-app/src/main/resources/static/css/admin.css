@@ -781,6 +781,8 @@ html[data-theme='dark'] .admin-action-menu {
 
   .table-actions,
   .table-actions > .btn,
+  .table-actions > form,
+  .table-actions > form > .btn,
   .table-actions > .dropdown,
   .table-actions > .dropdown > .btn {
     width: 100%;

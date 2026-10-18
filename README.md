@@ -168,7 +168,7 @@ macOS or Linux:
 bash mvnw test
 ```
 
-GitHub Actions runs the test suite for every pull request and every push to `master`. The current smoke coverage verifies that the Spring context starts with the demo profile and that the public home page responds correctly.
+GitHub Actions runs the test suite for every pull request and every push to `master`. Coverage includes demo startup, the public home page, consultation ownership, and CSRF protection for state-changing operations. The security regressions check rejected GET requests, missing or invalid tokens, successful POST requests, rendered form tokens, login/logout, and multipart profile forms. See [stage 1](docs/etapa-1-permisos.md) and [stage 2](docs/etapa-2-csrf.md) for the verification reports.
 
 ## Architecture
 
@@ -184,7 +184,7 @@ health-service-app/
 │   ├── static/         CSS, JavaScript and images
 │   ├── templates/      Thymeleaf pages and shared fragments
 │   └── application-*   Demo and MySQL profiles
-└── src/test/           Automated smoke tests
+└── src/test/           Smoke and security regression tests
 ```
 
 ## Demo scope

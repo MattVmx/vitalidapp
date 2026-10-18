@@ -126,12 +126,14 @@
               </td>
               <td data-label="Acciones">
                 <div class="table-actions">
-                  <a class="btn btn-sm btn-outline-danger"
-                     th:href="@{/admin/baja/{id}(id=${usuario.id})}"
-                     th:if="${usuario.activo}">Desactivar</a>
-                  <a class="btn btn-sm btn-outline-success"
-                     th:href="@{/admin/alta/{id}(id=${usuario.id})}"
-                     th:unless="${usuario.activo}">Reactivar</a>
+                  <form method="POST" th:action="@{/admin/baja/{id}(id=${usuario.id})}"
+                        th:if="${usuario.activo}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
+                  </form>
+                  <form method="POST" th:action="@{/admin/alta/{id}(id=${usuario.id})}"
+                        th:unless="${usuario.activo}">
+                    <button type="submit" class="btn btn-sm btn-outline-success">Reactivar</button>
+                  </form>
 
                   <div class="dropdown">
                     <button class="btn btn-sm btn-outline-primary dropdown-toggle"
@@ -139,7 +141,7 @@
                             data-bs-toggle="dropdown"
                             aria-expanded="false">Cambiar rol</button>
                     <div class="dropdown-menu admin-action-menu dropdown-menu-end">
-                      <form th:action="@{/admin/rol/{id}(id=${usuario.id})}" method="GET">
+                      <form th:action="@{/admin/rol/{id}(id=${usuario.id})}" method="POST">
                         <label th:for="${'rol-' + usuario.id}">Nuevo rol</label>
                         <select class="form-select"
                                 th:id="${'rol-' + usuario.id}"

@@ -55,7 +55,7 @@
           <p class="card-title" th:text="${'De especialidad ' + iterador.profesional.especialidad}"></p>
           </p>
           <p class="card-text">Diagnostico:</p>
-          <form method="GET" th:action="@{/consulta/diagnostico}"
+          <form method="POST" th:action="@{/consulta/diagnostico}"
             th:if="${iterador.diagnostico == null and iterador.profesional.id == session.usuariosession.getId()} ">
             <div class="form-group my-3">
               <textarea type="form-control" name="diagnostico" placeholder="Ingrese el diagnostico del paciente"

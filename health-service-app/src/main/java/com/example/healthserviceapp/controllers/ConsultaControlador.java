@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +26,7 @@ import com.example.healthserviceapp.service.PacienteService;
 import com.example.healthserviceapp.service.ProfesionalService;
 import com.example.healthserviceapp.utility.Dias;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/consulta")
@@ -57,13 +57,12 @@ public class ConsultaControlador {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_PROFESIONAL')")
-    @GetMapping("/diagnostico")
-    public String darDiagnostico(ModelMap modelo, @RequestParam String id, String diagnostico, @RequestParam String idPaciente) {
-        System.out.println("diagnostico: " + diagnostico + " id consulta: " + id + " id paciente: " + idPaciente);
+    @PostMapping("/diagnostico")
+    public String darDiagnostico(@RequestParam String id, @RequestParam String diagnostico,
+            @RequestParam String idPaciente, RedirectAttributes redirect) {
         consultaService.ingresarDiagnostico(id, diagnostico, idPaciente);
-        modelo.addAttribute("consulta", consultaService.listarHistorial(idPaciente));
-        modelo.addAttribute("paciente", pacienteService.listarUnPaciente(idPaciente));
-        return "pacientes_paso2.html";
+        redirect.addAttribute("idPaciente", idPaciente);
+        return "redirect:/consulta/consultas";
     }
 
     @PreAuthorize("hasAnyRole('ROLE_PACIENTE')")
@@ -141,7 +140,7 @@ public class ConsultaControlador {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_PACIENTE')")
-    @GetMapping("/reservar")
+    @PostMapping("/reservar")
     public String reservar(@RequestParam String idProfesional, @RequestParam String fecha,
             @RequestParam Integer horario, HttpSession session, ModelMap modelo) {
         Paciente paciente = (Paciente) session.getAttribute("usuariosession");
@@ -150,15 +149,10 @@ public class ConsultaControlador {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_PACIENTE')")
-    @GetMapping("/eliminar/{id}")
-    public String eliminarConsulta(@PathVariable String id, Model modelo, HttpSession session) {
+    @PostMapping("/eliminar/{id}")
+    public String eliminarConsulta(@PathVariable String id) {
         consultaService.eliminar(id);
-        Paciente paciente = (Paciente) session.getAttribute("usuariosession");
-
-        List<Consulta> consulta = consultaService.listarConsulta(paciente.getId());
-
-        modelo.addAttribute("consulta", consulta);
-        return "consulta_paciente.html";
+        return "redirect:/paciente/consulta";
     }
     
     @PreAuthorize("hasAnyRole('ROLE_PACIENTE')")

@@ -87,10 +87,9 @@
         <footer class="appointment-card__footer"
                 th:if="${hoy < iterador.fecha or (hoy == iterador.fecha and horaActual < horaTurno)}">
           <p>Podrás calificar la atención una vez finalizada la consulta.</p>
-          <a class="btn btn-outline-danger"
-             th:href="@{/consulta/eliminar/{id}(id=${iterador.id})}">
-            Cancelar turno
-          </a>
+          <form method="POST" th:action="@{/consulta/eliminar/{id}(id=${iterador.id})}">
+            <button type="submit" class="btn btn-outline-danger">Cancelar turno</button>
+          </form>
         </footer>
 
         <footer class="appointment-card__footer appointment-card__footer--rating"

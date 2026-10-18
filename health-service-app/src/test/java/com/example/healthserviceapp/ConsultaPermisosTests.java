@@ -24,6 +24,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -103,7 +104,8 @@ class ConsultaPermisosTests {
         Consulta propia = numero == 1 ? consulta1 : consulta2;
         Paciente paciente = numero == 1 ? paciente1 : paciente2;
         actuar(actor, diagnostico(propia, paciente, "Observacion autorizada"))
-                .andExpect(status().isOk());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/consulta/consultas?idPaciente=" + paciente.getId()));
         assertThat(recargar(propia).getDiagnostico()).isEqualTo("Observacion autorizada");
     }
 
@@ -112,7 +114,7 @@ class ConsultaPermisosTests {
     void pacienteNoPuedeCancelarConsultaAjena(int numero) throws Exception {
         Paciente actor = numero == 1 ? paciente1 : paciente2;
         Consulta ajena = numero == 1 ? consulta2 : consulta1;
-        actuar(actor, get("/consulta/eliminar/{id}", ajena.getId())).andExpect(status().isForbidden());
+        actuar(actor, post("/consulta/eliminar/{id}", ajena.getId())).andExpect(status().isForbidden());
         assertThat(recargar(ajena)).isNotNull();
     }
 
@@ -133,7 +135,8 @@ class ConsultaPermisosTests {
     void pacientePuedeCancelarConsultaPropia(int numero) throws Exception {
         Paciente actor = numero == 1 ? paciente1 : paciente2;
         Consulta propia = numero == 1 ? consulta1 : consulta2;
-        actuar(actor, get("/consulta/eliminar/{id}", propia.getId())).andExpect(status().isOk());
+        actuar(actor, post("/consulta/eliminar/{id}", propia.getId()))
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/paciente/consulta"));
         assertThat(recargar(propia)).isNull();
     }
 
@@ -174,12 +177,12 @@ class ConsultaPermisosTests {
 
     @Test
     void identificadoresInexistentesNoRevelanDatosNiProducenErrorInterno() throws Exception {
-        actuar(paciente1, get("/consulta/eliminar/no-existe")).andExpect(status().isForbidden());
+        actuar(paciente1, post("/consulta/eliminar/no-existe")).andExpect(status().isForbidden());
         actuar(paciente1, post("/consulta/calificar/no-existe").param("calificacion", "5"))
                 .andExpect(status().isForbidden());
         actuar(profesional1, get("/consulta/consultas").param("idPaciente", "no-existe"))
                 .andExpect(status().isForbidden());
-        actuar(profesional1, get("/consulta/diagnostico").param("id", "no-existe")
+        actuar(profesional1, post("/consulta/diagnostico").param("id", "no-existe")
                 .param("idPaciente", paciente1.getId()).param("diagnostico", "Prueba"))
                 .andExpect(status().isForbidden());
     }
@@ -189,7 +192,7 @@ class ConsultaPermisosTests {
         actuar(paciente1, get("/consulta/consultas").param("idPaciente", paciente1.getId()))
                 .andExpect(status().isForbidden());
         actuar(paciente1, diagnostico(consulta1, paciente1, "Prueba")).andExpect(status().isForbidden());
-        actuar(profesional1, get("/consulta/eliminar/{id}", consulta1.getId()))
+        actuar(profesional1, post("/consulta/eliminar/{id}", consulta1.getId()))
                 .andExpect(status().isForbidden());
         actuar(profesional1, post("/consulta/calificar/{id}", consulta1.getId()).param("calificacion", "5"))
                 .andExpect(status().isForbidden());
@@ -201,17 +204,17 @@ class ConsultaPermisosTests {
     void sinSesionSeSolicitaIngreso() throws Exception {
         mvc.perform(get("/consulta/consultas").param("idPaciente", paciente1.getId()))
                 .andExpect(status().is3xxRedirection()).andExpect(redirectedUrlPattern("**/login"));
-        mvc.perform(get("/consulta/eliminar/{id}", consulta1.getId()))
+        mvc.perform(post("/consulta/eliminar/{id}", consulta1.getId()).with(csrf()))
                 .andExpect(status().is3xxRedirection());
-        mvc.perform(post("/consulta/calificar/{id}", consulta1.getId()).param("calificacion", "5"))
+        mvc.perform(post("/consulta/calificar/{id}", consulta1.getId()).param("calificacion", "5").with(csrf()))
                 .andExpect(status().is3xxRedirection());
-        mvc.perform(diagnostico(consulta1, paciente1, "Prueba")).andExpect(status().is3xxRedirection());
+        mvc.perform(diagnostico(consulta1, paciente1, "Prueba").with(csrf())).andExpect(status().is3xxRedirection());
         assertThat(recargar(consulta1).getDiagnostico()).isEqualTo("Observacion exclusiva uno");
         assertThat(recargar(consulta1).getCalificacion()).isNull();
     }
 
     private ResultActions actuar(Usuario actor, MockHttpServletRequestBuilder request) throws Exception {
-        return mvc.perform(request.with(user(actor.getEmail()).roles(actor.getRol().name()))
+        return mvc.perform(request.with(csrf()).with(user(actor.getEmail()).roles(actor.getRol().name()))
                 .sessionAttr("usuariosession", actor));
     }
 
@@ -221,7 +224,7 @@ class ConsultaPermisosTests {
     }
 
     private MockHttpServletRequestBuilder diagnostico(Consulta consulta, Paciente paciente, String texto) {
-        return get("/consulta/diagnostico").param("id", consulta.getId())
+        return post("/consulta/diagnostico").param("id", consulta.getId())
                 .param("idPaciente", paciente.getId()).param("diagnostico", texto);
     }
 

@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -35,14 +36,14 @@ public class AdminControlador {
         return "panel.html";
     }
 
-    @GetMapping("/baja/{id}")
+    @PostMapping("/baja/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public String bajaUsuario(@PathVariable String id, ModelMap modelo) {
         usuarioService.darBaja(id);
         return "redirect:/admin/dashboard";
     }
 
-    @GetMapping("/alta/{id}")
+    @PostMapping("/alta/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public String altaUsuario(@PathVariable String id, ModelMap modelo) {
         usuarioService.darAlta(id);
@@ -70,7 +71,7 @@ public class AdminControlador {
         return "panel.html";
     }
 
-    @GetMapping("/rol/{id}")
+    @PostMapping("/rol/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public String cambiarRolUsuario(@PathVariable String id, Rol rol, ModelMap model) {
         usuarioService.modificarRol(rol, id);

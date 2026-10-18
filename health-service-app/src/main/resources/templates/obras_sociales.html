@@ -40,7 +40,7 @@
         <h2>Agregar obra social</h2>
         <p>Ingresá el nombre y el importe cubierto por consulta.</p>
 
-        <form th:action="@{/obras_sociales/crear}" method="GET" class="insurance-create-form">
+        <form th:action="@{/obras_sociales/crear}" method="POST" class="insurance-create-form">
           <div class="admin-field">
             <label for="insurance-name">Nombre</label>
             <input id="insurance-name"
@@ -132,7 +132,7 @@
                               aria-expanded="false">Editar</button>
                       <div class="dropdown-menu admin-action-menu insurance-action-menu dropdown-menu-end">
                         <div class="insurance-edit-group">
-                          <form th:action="@{/obras_sociales/modificarNombre}" method="GET">
+                          <form th:action="@{/obras_sociales/modificarNombre}" method="POST">
                             <input type="hidden" name="id" th:value="${obraSocial.id}">
                             <label th:for="${'nombre-' + obraSocial.id}">Nombre</label>
                             <input class="form-control"
@@ -145,7 +145,7 @@
                             <button class="btn btn-primary btn-sm" type="submit">Guardar nombre</button>
                           </form>
 
-                          <form th:action="@{/obras_sociales/modificarPrecio}" method="GET">
+                          <form th:action="@{/obras_sociales/modificarPrecio}" method="POST">
                             <input type="hidden" name="id" th:value="${obraSocial.id}">
                             <label th:for="${'precio-' + obraSocial.id}">Importe cubierto</label>
                             <div class="money-field money-field--compact">
@@ -165,9 +165,10 @@
                       </div>
                     </div>
 
-                    <a class="btn btn-sm btn-outline-danger"
-                       th:href="@{/obras_sociales/eliminar/{id}(id=${obraSocial.id})}"
-                       onclick="return confirm('¿Seguro que querés eliminar esta obra social?')">Eliminar</a>
+                    <form method="POST" th:action="@{/obras_sociales/eliminar/{id}(id=${obraSocial.id})}"
+                          onsubmit="return confirm('¿Seguro que querés eliminar esta obra social?')">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                    </form>
                   </div>
                 </td>
               </tr>

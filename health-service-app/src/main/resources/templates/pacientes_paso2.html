@@ -92,7 +92,7 @@
         <section class="diagnosis-panel">
           <span class="diagnosis-panel__label">Diagnóstico</span>
 
-          <form method="GET"
+          <form method="POST"
                 th:action="@{/consulta/diagnostico}"
                 class="diagnosis-form"
                 th:if="${iterador.diagnostico == null and iterador.profesional.id == session.usuariosession.getId()}">

@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,25 +50,25 @@ public class ObraSocialControlador {
         return "obras_sociales.html";
     }
 
-    @GetMapping("/eliminar/{id}")
+    @PostMapping("/eliminar/{id}")
     public String eliminar(@PathVariable String id, ModelMap modelo) {
         obraSocialService.eliminarObraSocial(id);
         return "redirect:/obras_sociales";
     }
 
-    @GetMapping("/modificarPrecio")
+    @PostMapping("/modificarPrecio")
     public String modificarPrecio(@RequestParam String id, @RequestParam Double precio) {
         obraSocialService.modificarPrecio(id, precio);
         return "redirect:/obras_sociales";
     }
 
-    @GetMapping("/modificarNombre")
+    @PostMapping("/modificarNombre")
     public String modificarNombre(@RequestParam String id, @RequestParam String nombre) {
         obraSocialService.modificarNombre(id, nombre);
         return "redirect:/obras_sociales";
     }
 
-    @GetMapping("/crear")
+    @PostMapping("/crear")
     public String crear(@RequestParam String nombre, @RequestParam Double precio) {
         obraSocialService.crearObraSocial(nombre, precio);
         return "redirect:/obras_sociales";
