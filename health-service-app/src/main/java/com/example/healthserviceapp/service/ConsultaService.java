@@ -1,7 +1,13 @@
 package com.example.healthserviceapp.service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import com.example.healthserviceapp.entity.Disponibilidad;
+import com.example.healthserviceapp.utility.Dias;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +29,8 @@ import com.example.healthserviceapp.repository.UsuarioRepository;
 
 @Service
 public class ConsultaService {
+    @Autowired
+    private Clock reservaClock;
     @Autowired
     private ConsultaRepository consultaRepository;
 
@@ -78,21 +86,118 @@ public class ConsultaService {
     @Transactional
     public void guardarConsulta(String idProfesional, String idPaciente, String fecha, Integer horario) {
         verificarIdentidad(idPaciente, Rol.PACIENTE);
-        Optional<Profesional> respuestaProfesional = profesionalRepository.findById(idProfesional);
-        Optional<Paciente> respuestaPaciente = pacienteRepository.findById(idPaciente);
-        if (respuestaProfesional.isPresent() && respuestaPaciente.isPresent()) {
-            Profesional profesional = respuestaProfesional.get();
-            Paciente paciente = respuestaPaciente.get();
-            Consulta consulta = new Consulta();
-            consulta.setProfesional(profesional);
-            consulta.setPaciente(paciente);
-            consulta.setFecha(fecha);
-            consulta.setHorario(horario);
-            consulta.setDiagnostico(null);
-            Double precio = profesional.getPrecioConsulta() - paciente.getObraSocial().getPrecio();
-            consulta.setPrecio(precio);
-            consultaRepository.save(consulta);
+        Profesional profesional = profesionalReservable(idProfesional);
+        LocalDateTime ahora = LocalDateTime.now(reservaClock);
+        LocalDate dia = validarFecha(fecha, ahora.toLocalDate());
+        if (horario == null || !horariosLaborales(profesional, dia, ahora).contains(horario)) {
+            throw new ReservaInvalidaException("El día u horario elegido no está disponible. Elegí otro turno.");
         }
+        if (consultaRepository.existsByProfesionalIdAndFechaAndHorario(idProfesional, fecha, horario)
+                || consultaRepository.existsByPacienteIdAndFechaAndHorario(idPaciente, fecha, horario)) {
+            throw new ReservaInvalidaException("Ese horario ya está ocupado o coincide con otro de tus turnos.");
+        }
+        Paciente paciente = pacienteRepository.findById(idPaciente).orElseThrow(this::accesoDenegado);
+        if (paciente.getObraSocial() == null || paciente.getObraSocial().getPrecio() == null
+                || !Double.isFinite(paciente.getObraSocial().getPrecio()) || paciente.getObraSocial().getPrecio() < 0) {
+            throw new ReservaInvalidaException("Completá una cobertura válida en tu perfil antes de reservar.");
+        }
+        Consulta consulta = new Consulta();
+        consulta.setProfesional(profesional);
+        consulta.setPaciente(paciente);
+        consulta.setFecha(dia.toString());
+        consulta.setHorario(horario);
+        consulta.setPrecio(Math.max(0, profesional.getPrecioConsulta() - paciente.getObraSocial().getPrecio()));
+        // La restricción única decide también cuando dos solicitudes superan la comprobación anterior.
+        consultaRepository.saveAndFlush(consulta);
+    }
+
+    @Transactional(readOnly = true)
+    public Profesional profesionalReservable(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new ReservaInvalidaException("Seleccioná un profesional disponible.");
+        }
+        Profesional profesional = profesionalRepository.findById(id)
+                .orElseThrow(() -> new ReservaInvalidaException("El profesional elegido no está disponible."));
+        if (!Boolean.TRUE.equals(profesional.getActivo()) || profesional.getRol() != Rol.PROFESIONAL
+                || profesional.getPrecioConsulta() == null || !Double.isFinite(profesional.getPrecioConsulta())
+                || profesional.getPrecioConsulta() < 0 || !agendaValida(profesional.getDisponibilidad())) {
+            throw new ReservaInvalidaException("El profesional elegido no tiene una agenda disponible.");
+        }
+        return profesional;
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> fechasDisponibles(String idProfesional, String idPaciente) {
+        verificarIdentidad(idPaciente, Rol.PACIENTE);
+        Profesional profesional = profesionalReservable(idProfesional);
+        LocalDateTime ahora = LocalDateTime.now(reservaClock);
+        LocalDate hoy = ahora.toLocalDate();
+        List<Consulta> ocupados = consultaRepository.turnosOcupados(idProfesional, idPaciente,
+                hoy.toString(), hoy.plusDays(90).toString());
+        List<String> fechas = new ArrayList<>();
+        for (LocalDate dia = hoy; !dia.isAfter(hoy.plusDays(90)); dia = dia.plusDays(1)) {
+            if (!quitarOcupados(horariosLaborales(profesional, dia, ahora), ocupados, dia.toString()).isEmpty()) {
+                fechas.add(dia.toString());
+            }
+        }
+        return fechas;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Integer> horariosDisponibles(String idProfesional, String idPaciente, String fecha) {
+        verificarIdentidad(idPaciente, Rol.PACIENTE);
+        Profesional profesional = profesionalReservable(idProfesional);
+        LocalDateTime ahora = LocalDateTime.now(reservaClock);
+        LocalDate dia = validarFecha(fecha, ahora.toLocalDate());
+        return quitarOcupados(horariosLaborales(profesional, dia, ahora),
+                consultaRepository.turnosOcupados(idProfesional, idPaciente, fecha, fecha), fecha);
+    }
+
+    private List<Integer> quitarOcupados(List<Integer> horarios, List<Consulta> ocupados, String fecha) {
+        for (Consulta consulta : ocupados) {
+            if (fecha.equals(consulta.getFecha())) {
+                horarios.remove(consulta.getHorario());
+            }
+        }
+        return horarios;
+    }
+
+    private LocalDate validarFecha(String fecha, LocalDate hoy) {
+        try {
+            if (fecha == null || !fecha.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                throw new DateTimeParseException("Formato inválido", "", 0);
+            }
+            LocalDate dia = LocalDate.parse(fecha);
+            if (dia.isBefore(hoy) || dia.isAfter(hoy.plusDays(90))) {
+                throw new ReservaInvalidaException("Elegí una fecha desde hoy hasta los próximos 90 días.");
+            }
+            return dia;
+        } catch (DateTimeParseException ex) {
+            throw new ReservaInvalidaException("Ingresá una fecha válida con formato AAAA-MM-DD.");
+        }
+    }
+
+    private boolean agendaValida(Disponibilidad d) {
+        return d != null && d.getDias() != null && d.getDias().length > 0
+                && d.getEntrada() != null && d.getInicioDescanso() != null
+                && d.getFinDescanso() != null && d.getSalida() != null
+                && d.getEntrada() >= 0 && d.getSalida() <= 24 && d.getEntrada() < d.getSalida()
+                && d.getEntrada() <= d.getInicioDescanso() && d.getInicioDescanso() <= d.getFinDescanso()
+                && d.getFinDescanso() <= d.getSalida();
+    }
+
+    private List<Integer> horariosLaborales(Profesional profesional, LocalDate dia, LocalDateTime ahora) {
+        List<Integer> horarios = new ArrayList<>();
+        Disponibilidad d = profesional.getDisponibilidad();
+        if (new Dias(d.getDias()).comprobar(dia.getDayOfWeek())) {
+            for (int hora = d.getEntrada(); hora < d.getSalida(); hora++) {
+                if ((hora < d.getInicioDescanso() || hora >= d.getFinDescanso())
+                        && dia.atTime(hora, 0).isAfter(ahora)) {
+                    horarios.add(hora);
+                }
+            }
+        }
+        return horarios;
     }
 
     @Transactional(readOnly = true)

@@ -17,6 +17,7 @@
 
 <main class="booking-page">
   <div class="container">
+    <div th:if="${error}" class="alert alert-warning" role="alert" th:text="${error}"></div>
     <section class="booking-shell">
       <aside class="booking-sidebar">
         <span class="booking-step-count">Paso 1 de 5</span>

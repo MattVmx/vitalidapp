@@ -5,12 +5,18 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
 
 @Entity
+@Table(uniqueConstraints = {
+    @UniqueConstraint(name = "uk_consulta_profesional_turno", columnNames = {"profesional_id", "fecha", "horario"}),
+    @UniqueConstraint(name = "uk_consulta_paciente_turno", columnNames = {"paciente_id", "fecha", "horario"})
+})
 @Data
 public class Consulta {
     @Id

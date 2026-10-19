@@ -24,6 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -196,7 +199,7 @@ class CsrfFlujosTests {
         consultas.saveAndFlush(consulta);
         verificarFormulario(como(paciente, get("/paciente/consulta")), "/consulta/calificar/" + consulta.getId());
         verificarFormulario(como(paciente, get("/consulta/horario").param("idProfesional", profesional.getId())
-                .param("fecha", LocalDate.now().plusDays(2).toString())), "/consulta/reservar");
+                .param("fecha", fechaReservable())), "/consulta/reservar");
         verificarFormulario(como(profesional, get("/consulta/consultas").param("idPaciente", paciente.getId())), "/consulta/diagnostico");
         verificarFormulario(como(admin, get("/admin/dashboard")), "/admin/rol/" + objetivo.getId());
         verificarFormulario(como(admin, get("/obras_sociales")), "/obras_sociales/crear");
@@ -243,10 +246,15 @@ class CsrfFlujosTests {
         return request.with(user(actor.getEmail()).roles(actor.getRol().name())).sessionAttr("usuariosession", actor);
     }
 
+    private String fechaReservable() {
+        return LocalDate.now(ZoneId.of("America/Argentina/Buenos_Aires"))
+                .with(TemporalAdjusters.next(DayOfWeek.MONDAY)).toString();
+    }
+
     private MockHttpServletRequestBuilder operacion(String caso, HttpMethod metodo) {
         switch (caso) {
             case "reservar": return como(paciente, request(metodo, "/consulta/reservar")
-                    .param("idProfesional", profesional.getId()).param("fecha", LocalDate.now().plusDays(2).toString()).param("horario", "10"));
+                    .param("idProfesional", profesional.getId()).param("fecha", fechaReservable()).param("horario", "10"));
             case "cancelar": return como(paciente, request(metodo, "/consulta/eliminar/" + consulta.getId()));
             case "diagnostico": return como(profesional, request(metodo, "/consulta/diagnostico")
                     .param("id", consulta.getId()).param("idPaciente", paciente.getId()).param("diagnostico", DIAGNOSTICO));

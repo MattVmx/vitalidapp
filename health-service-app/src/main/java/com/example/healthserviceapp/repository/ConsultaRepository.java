@@ -14,6 +14,15 @@ import com.example.healthserviceapp.entity.Profesional;
 
 @Repository
 public interface ConsultaRepository extends JpaRepository<Consulta, String> {
+    @Query("SELECT c FROM Consulta c WHERE (c.profesional.id = :profesional OR c.paciente.id = :paciente) "
+            + "AND c.fecha BETWEEN :desde AND :hasta")
+    List<Consulta> turnosOcupados(@Param("profesional") String profesional, @Param("paciente") String paciente,
+            @Param("desde") String desde, @Param("hasta") String hasta);
+
+    boolean existsByProfesionalIdAndFechaAndHorario(String profesionalId, String fecha, Integer horario);
+
+    boolean existsByPacienteIdAndFechaAndHorario(String pacienteId, String fecha, Integer horario);
+
     Optional<Consulta> findByIdAndPacienteId(String id, String pacienteId);
 
     Optional<Consulta> findByIdAndProfesionalId(String id, String profesionalId);

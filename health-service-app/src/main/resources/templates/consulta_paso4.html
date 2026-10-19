@@ -80,6 +80,7 @@
           </div>
         </div>
 
+        <p th:if="${#lists.isEmpty(fechas)}" class="alert alert-info" role="status">No hay turnos disponibles en los próximos 90 días. Podés elegir otro profesional.</p>
         <form method="GET"
               th:action="@{/consulta/horario}"
               class="booking-form"
@@ -110,7 +111,7 @@
                class="btn btn-soft btn-lg">
               <span aria-hidden="true">←</span> Anterior
             </a>
-            <button type="submit" class="btn btn-primary btn-lg">
+            <button type="submit" class="btn btn-primary btn-lg" th:disabled="${#lists.isEmpty(fechas)}">
               Continuar <span aria-hidden="true">→</span>
             </button>
           </div>

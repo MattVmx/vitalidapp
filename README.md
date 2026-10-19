@@ -172,6 +172,8 @@ GitHub Actions runs the test suite for every pull request and every push to `mas
 
 ## Architecture
 
+Reservation rules and concurrency checks are documented in [stage 3](docs/etapa-3-reservas.md). Bookings use Buenos Aires time, validate the professional's schedule on the server, and enforce one appointment per professional and patient at each date/time. Existing MySQL databases require the index checks described in that report before deployment.
+
 ```text
 health-service-app/
 ├── src/main/java/.../

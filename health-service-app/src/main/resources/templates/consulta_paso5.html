@@ -76,6 +76,8 @@
           </div>
         </div>
 
+        <p th:if="${#lists.isEmpty(horarios)}" class="alert alert-info" role="status">No quedan horarios disponibles para esta fecha. Volvé al calendario y elegí otro día.</p>
+        <p class="text-muted">Horarios de Argentina (Buenos Aires). La disponibilidad se confirma al guardar.</p>
         <form method="POST"
               th:action="@{/consulta/reservar}"
               class="booking-form"
@@ -98,7 +100,7 @@
                class="btn btn-soft btn-lg">
               <span aria-hidden="true">←</span> Anterior
             </a>
-            <button type="submit" class="btn btn-primary btn-lg">
+            <button type="submit" class="btn btn-primary btn-lg" th:disabled="${#lists.isEmpty(horarios)}">
               Confirmar turno <span aria-hidden="true">✓</span>
             </button>
           </div>

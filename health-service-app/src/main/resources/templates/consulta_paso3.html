@@ -83,7 +83,7 @@
             <select id="profesional" class="custom-select" name="idProfesional" required>
               <option th:each="profesional : ${profesionales}"
                       th:value="${profesional.id}"
-                      th:text="${profesional.nombre + ' ' + profesional.apellido + ' · $' + (profesional.precioConsulta - #session.getAttribute('usuariosession').obraSocial.precio) + ' · ' + profesional.calificacion + ' ★'}">
+                      th:text="${profesional.nombre + ' ' + profesional.apellido + ' · $' + T(java.lang.Math).max(0.0, profesional.precioConsulta - #session.getAttribute('usuariosession').obraSocial.precio) + ' · ' + profesional.calificacion + ' ★'}">
               </option>
             </select>
             <small>El importe mostrado ya contempla la cobertura registrada en tu perfil.</small>

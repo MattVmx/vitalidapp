@@ -1,10 +1,6 @@
 
 package com.example.healthserviceapp.controllers;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
@@ -24,7 +20,9 @@ import com.example.healthserviceapp.entity.Profesional;
 import com.example.healthserviceapp.service.ConsultaService;
 import com.example.healthserviceapp.service.PacienteService;
 import com.example.healthserviceapp.service.ProfesionalService;
-import com.example.healthserviceapp.utility.Dias;
+import com.example.healthserviceapp.service.ReservaInvalidaException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -92,24 +90,10 @@ public class ConsultaControlador {
     @PreAuthorize("hasAnyRole('ROLE_PACIENTE')")
     @GetMapping("/disponibilidad")
     public String disponibilidadProfesional(@RequestParam String idProfesional, HttpSession session, ModelMap modelo) {
-        Profesional profesional = profesionalService.getOne(idProfesional);
+        Profesional profesional = consultaService.profesionalReservable(idProfesional);
         modelo.put("profesional", profesional);
-
-        ArrayList<String> listaA = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
-        Dias dias = new Dias(profesional.getDisponibilidad().getDias());
-        for (LocalDate date = today; date.isBefore(today.plusDays(91)); date = date.plusDays(1)) {
-            if (dias.comprobar(date.getDayOfWeek())) {
-                listaA.add(date.format(formatter));
-            }
-        }
-        Long nTurnos = profesional.getDisponibilidad().totalDeTurnos();
-        List<String> listaB = consultaService.listarConsultasPorProfesionalAgrupadoPorFecha(profesional, nTurnos);
-        for (String item : listaB) {
-            listaA.remove(item);
-        }
-        modelo.put("fechas", listaA);
+        Paciente paciente = (Paciente) session.getAttribute("usuariosession");
+        modelo.put("fechas", consultaService.fechasDisponibles(idProfesional, paciente.getId()));
         return "consulta_paso4.html";
     }
 
@@ -117,35 +101,34 @@ public class ConsultaControlador {
     @GetMapping("/horario")
     public String horarioProfesional(@RequestParam String idProfesional, @RequestParam String fecha,
             HttpSession session, ModelMap modelo) {
-        Profesional profesional = profesionalService.getOne(idProfesional);
+        Profesional profesional = consultaService.profesionalReservable(idProfesional);
         modelo.put("profesional", profesional);
         modelo.put("fecha", fecha);
-        ArrayList<Integer> listaA = new ArrayList<>();
-        Integer entrada = profesional.getDisponibilidad().getEntrada();
-        Integer inicioDescanso = profesional.getDisponibilidad().getInicioDescanso();
-        for (int i = entrada; i < inicioDescanso; i++) {
-            listaA.add(i);
-        }
-        Integer finDescanso = profesional.getDisponibilidad().getFinDescanso();
-        Integer salida = profesional.getDisponibilidad().getSalida();
-        for (int i = finDescanso; i < salida; i++) {
-            listaA.add(i);
-        }
-        List<Integer> listaB = consultaService.listarHorarioPorProfesionalPorFecha(profesional, fecha);
-        for (Integer item : listaB) {
-            listaA.remove(item);
-        }
-        modelo.put("horarios", listaA);
+        Paciente paciente = (Paciente) session.getAttribute("usuariosession");
+        modelo.put("horarios", consultaService.horariosDisponibles(idProfesional, paciente.getId(), fecha));
         return "consulta_paso5.html";
     }
 
     @PreAuthorize("hasAnyRole('ROLE_PACIENTE')")
     @PostMapping("/reservar")
     public String reservar(@RequestParam String idProfesional, @RequestParam String fecha,
-            @RequestParam Integer horario, HttpSession session, ModelMap modelo) {
+            @RequestParam Integer horario, HttpSession session, RedirectAttributes redirect) {
         Paciente paciente = (Paciente) session.getAttribute("usuariosession");
-        consultaService.guardarConsulta(idProfesional, paciente.getId(), fecha, horario);
-        return "redirect:/";
+        try {
+            consultaService.guardarConsulta(idProfesional, paciente.getId(), fecha, horario);
+        } catch (DataIntegrityViolationException ex) {
+            // Se captura fuera de la transacción: el intento fallido ya se revirtió.
+            redirect.addFlashAttribute("error", "No se pudo reservar: el horario dejó de estar disponible. Elegí otro turno.");
+            return "redirect:/consulta/provincia";
+        }
+        redirect.addFlashAttribute("exito", "Tu turno quedó confirmado. Podés verlo en Mis consultas.");
+        return "redirect:/paciente/consulta";
+    }
+
+    @ExceptionHandler(ReservaInvalidaException.class)
+    public String reservaInvalida(ReservaInvalidaException ex, RedirectAttributes redirect) {
+        redirect.addFlashAttribute("error", ex.getMessage());
+        return "redirect:/consulta/provincia";
     }
 
     @PreAuthorize("hasAnyRole('ROLE_PACIENTE')")
