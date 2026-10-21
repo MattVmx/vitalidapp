@@ -41,23 +41,13 @@
 
     <section class="appointment-grid" th:unless="${#lists.isEmpty(consulta)}" aria-label="Listado de consultas">
       <article class="appointment-card"
-               th:each="iterador : ${consulta}"
-               th:with="hoy=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')},
-                        horaActual=${#dates.format(#dates.createNow(), 'HH')},
-                        horaTurno=${#numbers.formatInteger(iterador.horario, 2)}">
+               th:each="iterador : ${consulta}">
         <header class="appointment-card__header">
           <div>
             <span class="appointment-card__label">Especialidad</span>
             <h2 th:text="${#strings.capitalizeWords(iterador.profesional.especialidad.toString().replaceAll('_', ' ').toLowerCase())}">Cardiología</h2>
           </div>
-          <span class="status-badge status-badge--upcoming"
-                th:if="${hoy < iterador.fecha or (hoy == iterador.fecha and horaActual < horaTurno)}">
-            Próxima
-          </span>
-          <span class="status-badge status-badge--completed"
-                th:if="${hoy > iterador.fecha or (hoy == iterador.fecha and horaActual >= horaTurno)}">
-            Realizada
-          </span>
+          <span class="status-badge" th:classappend="${iterador.estado.name() == 'RESERVADA' ? 'status-badge--upcoming' : 'status-badge--completed'}" th:text="${iterador.estado.etiqueta}">Reservada</span>
         </header>
 
         <div class="appointment-card__schedule">
@@ -86,15 +76,15 @@
         </dl>
 
         <footer class="appointment-card__footer"
-                th:if="${hoy < iterador.fecha or (hoy == iterador.fecha and horaActual < horaTurno)}">
-          <p>Podrás calificar la atención una vez finalizada la consulta.</p>
+                th:if="${@consultaService.puedeCancelar(iterador)}">
+          <p>Podés cancelar antes del inicio. El registro se conservará en tu historial.</p>
           <form method="POST" th:action="@{/consulta/eliminar/{id}(id=${iterador.id})}">
             <button type="submit" class="btn btn-outline-danger">Cancelar turno</button>
           </form>
         </footer>
 
         <footer class="appointment-card__footer appointment-card__footer--rating"
-                th:if="${hoy > iterador.fecha or (hoy == iterador.fecha and horaActual >= horaTurno)}">
+                th:if="${iterador.estado.name() == 'FINALIZADA'}">
           <div th:if="${iterador.calificacion != null}" class="rating-summary">
             <span>Tu calificación</span>
             <label class="rating-label" aria-label="Calificación otorgada">
@@ -107,7 +97,7 @@
           <form class="rating-form"
                 th:action="@{/consulta/calificar/{id}(id=${iterador.id})}"
                 method="POST"
-                th:if="${iterador.calificacion == null}">
+                th:if="${@consultaService.puedeCalificar(iterador)}">
             <div>
               <span>¿Cómo fue la atención?</span>
               <label class="rating-label" aria-label="Elegir una calificación de una a cinco estrellas">
@@ -118,6 +108,12 @@
             </div>
             <button type="submit" class="btn btn-primary">Guardar calificación</button>
           </form>
+        </footer>
+        <footer class="appointment-card__footer" th:if="${iterador.estado.name() == 'CANCELADA'}">
+          <p>Cancelada. El horario fue liberado y esta consulta se conserva en tu historial.</p>
+        </footer>
+        <footer class="appointment-card__footer" th:if="${iterador.estado.name() == 'RESERVADA' and !@consultaService.puedeCancelar(iterador)}">
+          <p>Pendiente de cierre por el profesional. Podrás calificar cuando finalice la consulta.</p>
         </footer>
       </article>
     </section>

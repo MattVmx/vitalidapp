@@ -49,6 +49,7 @@
         <div class="card-header" th:text="${'Consulta del dia ' + iterador.fecha}"></div>
         <div class="card-body">
           <h5 class="card-title">Información de Consulta</h5>
+          <p th:text="${iterador.estado.etiqueta}"></p>
           </p>
           <p class="card-text"
             th:text="${'Profesional: ' + iterador.profesional.nombre + ' ' + iterador.profesional.apellido}"></p>
@@ -56,15 +57,15 @@
           </p>
           <p class="card-text">Diagnostico:</p>
           <form method="POST" th:action="@{/consulta/diagnostico}"
-            th:if="${iterador.diagnostico == null and iterador.profesional.id == session.usuariosession.getId()} ">
+            th:if="${@consultaService.puedeDiagnosticar(iterador) and iterador.profesional.id == session.usuariosession.getId()} ">
             <div class="form-group my-3">
               <textarea type="form-control" name="diagnostico" placeholder="Ingrese el diagnostico del paciente"
-                style="width: 100%;" required></textarea>
+                style="width: 100%;" maxlength="1500" required></textarea>
             </div>
             <input hidden th:value="${iterador.id}" name="id">
             <input hidden th:value="${iterador.paciente.id}" name="idPaciente">
             <button type="submit" class="btn btn-primary mt-3 botones next_button"
-              style="margin-left: auto; margin-right: auto;">Enviar</button>
+              style="margin-left: auto; margin-right: auto;">Finalizar consulta y guardar diagnóstico</button>
           </form>
           <div th:if="${iterador.diagnostico != null}">
             <p th:text="${iterador.diagnostico}"></p>

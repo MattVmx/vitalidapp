@@ -2,6 +2,8 @@
 
 Implementada el 19 de octubre de 2026 sobre `6ef028f` (etapa 2).
 
+Nota histórica: la [etapa 4](etapa-4-estados.md) implementa los pendientes de este informe y reemplaza los índices de tres columnas por restricciones de ocupación activa. Para actualizar una base a la versión actual, seguir el procedimiento de la etapa 4.
+
 ## Comportamiento
 
 - El servidor valida la reserva aunque se modifique o se reenvíe el formulario. Se mantienen identidad, permisos y CSRF de las etapas anteriores.

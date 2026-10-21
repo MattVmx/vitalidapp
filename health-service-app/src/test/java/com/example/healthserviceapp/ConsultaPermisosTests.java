@@ -3,6 +3,7 @@ package com.example.healthserviceapp;
 import com.example.healthserviceapp.entity.*;
 import com.example.healthserviceapp.enums.Especialidad;
 import com.example.healthserviceapp.enums.Rol;
+import com.example.healthserviceapp.enums.EstadoConsulta;
 import com.example.healthserviceapp.enums.Sexo;
 import com.example.healthserviceapp.repository.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,6 +104,9 @@ class ConsultaPermisosTests {
         Profesional actor = numero == 1 ? profesional1 : profesional2;
         Consulta propia = numero == 1 ? consulta1 : consulta2;
         Paciente paciente = numero == 1 ? paciente1 : paciente2;
+        propia.setEstado(EstadoConsulta.RESERVADA);
+        propia.setDiagnostico(null);
+        entityManager.flush();
         actuar(actor, diagnostico(propia, paciente, "Observacion autorizada"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/consulta/consultas?idPaciente=" + paciente.getId()));
@@ -135,9 +139,13 @@ class ConsultaPermisosTests {
     void pacientePuedeCancelarConsultaPropia(int numero) throws Exception {
         Paciente actor = numero == 1 ? paciente1 : paciente2;
         Consulta propia = numero == 1 ? consulta1 : consulta2;
+        propia.setFecha(LocalDate.now().plusDays(1).toString());
+        propia.setEstado(EstadoConsulta.RESERVADA);
+        propia.setDiagnostico(null);
+        entityManager.flush();
         actuar(actor, post("/consulta/eliminar/{id}", propia.getId()))
                 .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/paciente/consulta"));
-        assertThat(recargar(propia)).isNull();
+        assertThat(recargar(propia).getEstado()).isEqualTo(EstadoConsulta.CANCELADA);
     }
 
     @ParameterizedTest
@@ -269,6 +277,7 @@ class ConsultaPermisosTests {
         consulta.setHorario(hora);
         consulta.setPrecio(1000.0);
         consulta.setDiagnostico(diagnostico);
+        consulta.setEstado(EstadoConsulta.FINALIZADA);
         return consultas.save(consulta);
     }
 }

@@ -2,6 +2,7 @@ package com.example.healthserviceapp;
 
 import com.example.healthserviceapp.entity.*;
 import com.example.healthserviceapp.enums.Rol;
+import com.example.healthserviceapp.enums.EstadoConsulta;
 import com.example.healthserviceapp.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -113,6 +114,14 @@ class CsrfFlujosTests {
     @ValueSource(strings = {"reservar", "cancelar", "diagnostico", "calificar", "baja", "alta", "rol",
             "crear", "eliminar", "precio", "nombre", "registro", "perfilPaciente", "perfilProfesional"})
     void postConTokenValidoConservaLosFlujos(String caso, CapturedOutput output) throws Exception {
+        if (caso.equals("diagnostico") || caso.equals("calificar")) {
+            consulta.setFecha(LocalDate.now().minusDays(1).toString());
+            if (caso.equals("calificar")) {
+                consulta.setEstado(EstadoConsulta.FINALIZADA);
+                consulta.setDiagnostico("Observación ficticia");
+            }
+            consulta = consultas.saveAndFlush(consulta);
+        }
         if (caso.equals("baja")) {
             objetivo.setActivo(true);
             usuarios.saveAndFlush(objetivo);
@@ -128,7 +137,7 @@ class CsrfFlujosTests {
                 assertThat(consultas.count()).isEqualTo(totalConsultas + 1);
                 break;
             case "cancelar":
-                assertThat(consultas.existsById(consulta.getId())).isFalse();
+                assertThat(consultas.findById(consulta.getId()).get().getEstado()).isEqualTo(EstadoConsulta.CANCELADA);
                 assertThat(resultado.getResponse().getRedirectedUrl()).isEqualTo("/paciente/consulta");
                 break;
             case "diagnostico":
@@ -196,10 +205,15 @@ class CsrfFlujosTests {
         verificarFormulario(get("/"), "/registro");
         verificarFormulario(como(paciente, get("/paciente/consulta")), "/consulta/eliminar/" + consulta.getId());
         consulta.setFecha(LocalDate.now().minusDays(1).toString());
-        consultas.saveAndFlush(consulta);
+        consulta.setEstado(EstadoConsulta.FINALIZADA);
+        consulta.setDiagnostico("Observación ficticia");
+        consulta = consultas.saveAndFlush(consulta);
         verificarFormulario(como(paciente, get("/paciente/consulta")), "/consulta/calificar/" + consulta.getId());
         verificarFormulario(como(paciente, get("/consulta/horario").param("idProfesional", profesional.getId())
                 .param("fecha", fechaReservable())), "/consulta/reservar");
+        consulta.setEstado(EstadoConsulta.RESERVADA);
+        consulta.setDiagnostico(null);
+        consulta = consultas.saveAndFlush(consulta);
         verificarFormulario(como(profesional, get("/consulta/consultas").param("idPaciente", paciente.getId())), "/consulta/diagnostico");
         verificarFormulario(como(admin, get("/admin/dashboard")), "/admin/rol/" + objetivo.getId());
         verificarFormulario(como(admin, get("/obras_sociales")), "/obras_sociales/crear");
@@ -235,7 +249,7 @@ class CsrfFlujosTests {
         Consulta actual = consultas.findById(consulta.getId()).orElse(null);
         Usuario cuenta = usuarios.findById(objetivo.getId()).get();
         ObraSocial obra = obras.findById(cobertura.getId()).orElse(null);
-        return Arrays.asList(consultas.count(), actual == null ? null : actual.getDiagnostico(),
+        return Arrays.asList(consultas.count(), actual == null ? null : actual.getEstado(), actual == null ? null : actual.getDiagnostico(),
                 actual == null ? null : actual.getCalificacion(), usuarios.count(), cuenta.getActivo(), cuenta.getRol(),
                 obras.count(), obra == null ? null : obra.getNombre(), obra == null ? null : obra.getPrecio(),
                 ((Paciente) usuarios.findById(paciente.getId()).get()).getNombre(),

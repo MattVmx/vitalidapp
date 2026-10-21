@@ -40,13 +40,13 @@ The reservation journey is split into five clear steps: province, specialty, pro
 
 ### Patient appointments
 
-Patients can review upcoming and completed consultations, cancel future appointments and rate an appointment after it has taken place.
+Patients can review reserved, cancelled and completed consultations. Cancelling before the appointment starts frees the slot while preserving its history. Ratings are accepted once, from 1 to 5, after the professional completes the consultation.
 
 ![Patient appointment history](docs/screenshots/04-patient-appointments.png)
 
 ### Professional clinical follow-up
 
-Professionals can access the patients linked to their appointments, review consultation history and record a diagnosis for each visit.
+Professionals can access the patients linked to their appointments and review consultation history, including cancellations. After the one-hour appointment ends, saving a diagnosis completes the consultation; completed diagnoses cannot be overwritten.
 
 ![Professional patient history](docs/screenshots/05-professional-history.png)
 
@@ -154,6 +154,8 @@ bash mvnw spring-boot:run
 
 Never commit real database credentials to the repository.
 
+For an existing database, follow the [stage 4 migration checklist](docs/etapa-4-estados.md#base-mysql-existente) before starting this version. It replaces the stage 3 indexes and backfills consultation states; `ddl-auto=update` alone is insufficient. Application behavior and concurrency were tested with a fresh H2 database. The MySQL migration remains unexecuted and requires validation on a restored copy.
+
 ## Tests
 
 Windows PowerShell:
@@ -172,7 +174,7 @@ GitHub Actions runs the test suite for every pull request and every push to `mas
 
 ## Architecture
 
-Reservation rules and concurrency checks are documented in [stage 3](docs/etapa-3-reservas.md). Bookings use Buenos Aires time, validate the professional's schedule on the server, and enforce one appointment per professional and patient at each date/time. Existing MySQL databases require the index checks described in that report before deployment.
+Reservation rules are documented in [stage 3](docs/etapa-3-reservas.md); consultation states, retained history and updated concurrency checks are documented in [stage 4](docs/etapa-4-estados.md). Bookings use Buenos Aires time and validate the professional's schedule on the server. Unique occupancy constraints prevent overlapping reservations while allowing cancelled records to remain in the history. Optimistic locking protects consultation updates, and rating/average updates share one transaction. The complete suite contains 140 tests.
 
 ```text
 health-service-app/

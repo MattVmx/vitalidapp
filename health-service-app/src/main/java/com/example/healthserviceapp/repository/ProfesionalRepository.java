@@ -12,6 +12,9 @@ import org.springframework.data.repository.query.Param;
 
 @Repository
 public interface ProfesionalRepository extends JpaRepository<Profesional, String> {
+    @org.springframework.data.jpa.repository.Lock(javax.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Profesional p WHERE p.id = :id")
+    java.util.Optional<Profesional> bloquearParaCalificacion(@Param("id") String id);
 
     @Query("SELECT p FROM Profesional p")
     public List<Profesional> listarProfesionales();

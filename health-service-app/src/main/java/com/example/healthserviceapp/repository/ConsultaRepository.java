@@ -15,13 +15,13 @@ import com.example.healthserviceapp.entity.Profesional;
 @Repository
 public interface ConsultaRepository extends JpaRepository<Consulta, String> {
     @Query("SELECT c FROM Consulta c WHERE (c.profesional.id = :profesional OR c.paciente.id = :paciente) "
-            + "AND c.fecha BETWEEN :desde AND :hasta")
+            + "AND c.turnoActivo = true AND c.fecha BETWEEN :desde AND :hasta")
     List<Consulta> turnosOcupados(@Param("profesional") String profesional, @Param("paciente") String paciente,
             @Param("desde") String desde, @Param("hasta") String hasta);
 
-    boolean existsByProfesionalIdAndFechaAndHorario(String profesionalId, String fecha, Integer horario);
+    boolean existsByProfesionalIdAndFechaAndHorarioAndTurnoActivoTrue(String profesionalId, String fecha, Integer horario);
 
-    boolean existsByPacienteIdAndFechaAndHorario(String pacienteId, String fecha, Integer horario);
+    boolean existsByPacienteIdAndFechaAndHorarioAndTurnoActivoTrue(String pacienteId, String fecha, Integer horario);
 
     Optional<Consulta> findByIdAndPacienteId(String id, String pacienteId);
 
@@ -30,10 +30,10 @@ public interface ConsultaRepository extends JpaRepository<Consulta, String> {
     List<Consulta> findByPacienteIdAndProfesionalIdOrderByFechaAscHorarioAsc(
             String pacienteId, String profesionalId);
 
-    @Query("SELECT c.fecha FROM Consulta c WHERE c.profesional = :profesional GROUP BY c.fecha HAVING COUNT(*) = :nTurnos")
+    @Query("SELECT c.fecha FROM Consulta c WHERE c.profesional = :profesional AND c.turnoActivo = true GROUP BY c.fecha HAVING COUNT(*) >= :nTurnos")
     public List<String> listarConsultasPorProfesionalAgrupadoPorFecha(@Param("profesional") Profesional profesional, @Param("nTurnos") Long nTurnos);
 
-    @Query("SELECT c.horario FROM Consulta c WHERE (c.profesional = :profesional AND c.fecha = :fechaConsulta)")
+    @Query("SELECT c.horario FROM Consulta c WHERE c.profesional = :profesional AND c.fecha = :fechaConsulta AND c.turnoActivo = true")
     public List<Integer> listarHorarioPorProfesionalPorFecha(@Param("profesional") Profesional profesional, @Param("fechaConsulta") String fecha);
 
     @Query("SELECT c FROM Consulta c WHERE c.paciente.id = :id ORDER BY c.fecha ASC")
@@ -42,6 +42,6 @@ public interface ConsultaRepository extends JpaRepository<Consulta, String> {
     @Query("SELECT DISTINCT(c.paciente) FROM Consulta c WHERE c.profesional.id = :id")
     public List<Paciente> listarPacientesPorProfesional(@Param("id") String id);
     
-    @Query("SELECT AVG(c.calificacion) FROM Consulta c WHERE (c.calificacion != NULL and c.profesional.id = :id)")
+    @Query("SELECT AVG(c.calificacion) FROM Consulta c WHERE c.calificacion IS NOT NULL AND c.estado = com.example.healthserviceapp.enums.EstadoConsulta.FINALIZADA AND c.profesional.id = :id")
     public Double promedioCalificacionPorProfesional(@Param("id") String id);
 }

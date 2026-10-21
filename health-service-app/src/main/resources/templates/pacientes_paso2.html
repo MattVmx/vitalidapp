@@ -17,6 +17,7 @@
 
 <main class="records-page">
   <div class="container">
+    <div th:if="${exito}" class="alert alert-success" role="status" th:text="${exito}"></div>
     <nav class="records-breadcrumb" aria-label="Navegación de historia clínica">
       <a th:href="@{/consulta/paciente}"><span aria-hidden="true">←</span> Cambiar paciente</a>
       <span aria-hidden="true">/</span>
@@ -70,7 +71,7 @@
       <article class="clinical-card" th:each="iterador : ${consulta}">
         <header class="clinical-card__header">
           <div>
-            <span class="clinical-card__date">Consulta</span>
+            <span class="clinical-card__date" th:text="${iterador.estado.etiqueta}">Consulta</span>
             <h3 th:text="${iterador.fecha + ' · ' + iterador.horario + ':00 hs'}">2026-08-26 · 14:00 hs</h3>
           </div>
           <span class="clinical-card__specialty"
@@ -95,7 +96,7 @@
           <form method="POST"
                 th:action="@{/consulta/diagnostico}"
                 class="diagnosis-form"
-                th:if="${iterador.diagnostico == null and iterador.profesional.id == session.usuariosession.getId()}">
+                th:if="${@consultaService.puedeDiagnosticar(iterador) and iterador.profesional.id == session.usuariosession.getId()}">
             <label th:for="${'diagnostico-' + iterador.id}">Registrá las observaciones de esta consulta</label>
             <textarea class="form-control"
                       th:id="${'diagnostico-' + iterador.id}"
@@ -107,8 +108,8 @@
             <input type="hidden" th:value="${iterador.id}" name="id">
             <input type="hidden" th:value="${iterador.paciente.id}" name="idPaciente">
             <div class="diagnosis-form__actions">
-              <small>La información quedará disponible en la historia clínica.</small>
-              <button type="submit" class="btn btn-primary">Guardar diagnóstico</button>
+              <small>Al guardar, la consulta quedará finalizada y el diagnóstico no podrá sobrescribirse.</small>
+              <button type="submit" class="btn btn-primary">Finalizar consulta y guardar diagnóstico</button>
             </div>
           </form>
 
@@ -117,11 +118,11 @@
           </div>
 
           <div class="diagnosis-notice"
-               th:if="${iterador.profesional.id != session.usuariosession.getId() and iterador.diagnostico == null}">
+               th:if="${iterador.diagnostico == null and !@consultaService.puedeDiagnosticar(iterador)}">
             <span aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.8 2.4 18a2 2 0 0 0 1.75 3h15.7a2 2 0 0 0 1.75-3L13.7 3.8a2 2 0 0 0-3.4 0Z"/></svg>
             </span>
-            <p>El diagnóstico está pendiente y solo puede completarlo el profesional responsable de esta consulta.</p>
+            <p th:text="${iterador.estado.name() == 'CANCELADA' ? 'Consulta cancelada. Se conserva el registro sin habilitar diagnóstico.' : 'El diagnóstico se habilitará al terminar la hora de atención (horario de Buenos Aires).'}"></p>
           </div>
         </section>
       </article>

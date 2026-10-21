@@ -4,7 +4,6 @@ package com.example.healthserviceapp.controllers;
 
 import javax.servlet.http.HttpSession;
 
-import com.example.healthserviceapp.entity.Consulta;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +20,10 @@ import com.example.healthserviceapp.service.ConsultaService;
 import com.example.healthserviceapp.service.PacienteService;
 import com.example.healthserviceapp.service.ProfesionalService;
 import com.example.healthserviceapp.service.ReservaInvalidaException;
+import com.example.healthserviceapp.service.EstadoConsultaException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -59,6 +62,7 @@ public class ConsultaControlador {
     public String darDiagnostico(@RequestParam String id, @RequestParam String diagnostico,
             @RequestParam String idPaciente, RedirectAttributes redirect) {
         consultaService.ingresarDiagnostico(id, diagnostico, idPaciente);
+        redirect.addFlashAttribute("exito", "Consulta finalizada. El diagnóstico quedó guardado.");
         redirect.addAttribute("idPaciente", idPaciente);
         return "redirect:/consulta/consultas";
     }
@@ -133,19 +137,28 @@ public class ConsultaControlador {
 
     @PreAuthorize("hasAnyRole('ROLE_PACIENTE')")
     @PostMapping("/eliminar/{id}")
-    public String eliminarConsulta(@PathVariable String id) {
+    public String eliminarConsulta(@PathVariable String id, RedirectAttributes redirect) {
         consultaService.eliminar(id);
+        redirect.addFlashAttribute("exito", "Turno cancelado. El registro se conserva en tu historial.");
         return "redirect:/paciente/consulta";
     }
     
     @PreAuthorize("hasAnyRole('ROLE_PACIENTE')")
     @PostMapping("/calificar/{id}")
-    public String guardarCalificacion(@PathVariable String id, @RequestParam int calificacion, ModelMap modelo){
+    public String guardarCalificacion(@PathVariable String id, @RequestParam int calificacion, RedirectAttributes redirect){
         consultaService.guardarCalificacion(id, calificacion);
-        Consulta consulta = consultaService.buscarConsulta(id);
-        String idProfesional = consulta.getProfesional().getId();
-        Double promedio = consultaService.promedioCalificacionPorProfesional(idProfesional);
-        profesionalService.guardarCalificacion(idProfesional, promedio);
+        redirect.addFlashAttribute("exito", "Tu calificación quedó guardada.");
         return "redirect:/paciente/consulta";
+    }
+
+    @ExceptionHandler({EstadoConsultaException.class, OptimisticLockingFailureException.class})
+    public ModelAndView conflictoDeEstado(RuntimeException ex) {
+        ModelAndView modelo = new ModelAndView("error");
+        modelo.setStatus(HttpStatus.CONFLICT);
+        modelo.addObject("codigo", 409);
+        modelo.addObject("titulo", "No se pudo actualizar la consulta");
+        modelo.addObject("mensaje", ex instanceof EstadoConsultaException ? ex.getMessage()
+                : "La consulta cambió mientras la estabas editando. Volvé al historial y revisá su estado.");
+        return modelo;
     }
 }

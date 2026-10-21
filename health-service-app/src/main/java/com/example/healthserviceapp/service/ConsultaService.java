@@ -12,6 +12,7 @@ import com.example.healthserviceapp.utility.Dias;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,7 @@ import com.example.healthserviceapp.entity.Paciente;
 import com.example.healthserviceapp.entity.Profesional;
 import com.example.healthserviceapp.entity.Usuario;
 import com.example.healthserviceapp.enums.Rol;
+import com.example.healthserviceapp.enums.EstadoConsulta;
 import com.example.healthserviceapp.repository.ConsultaRepository;
 import com.example.healthserviceapp.repository.PacienteRepository;
 import com.example.healthserviceapp.repository.ProfesionalRepository;
@@ -63,8 +65,16 @@ public class ConsultaService {
         if (!consulta.getPaciente().getId().equals(idPaciente)) {
             throw accesoDenegado();
         }
-        consulta.setDiagnostico(diagnostico);
-        consultaRepository.save(consulta);
+        if (!puedeDiagnosticar(consulta)) {
+            throw new EstadoConsultaException("Solo se puede finalizar una consulta reservada después de su hora de atención.");
+        }
+        if (diagnostico == null || diagnostico.trim().isEmpty() || diagnostico.length() > 1500) {
+            throw new EstadoConsultaException("Ingresá un diagnóstico de entre 1 y 1500 caracteres.");
+        }
+        consulta.setDiagnostico(diagnostico.trim());
+        consulta.setEstado(EstadoConsulta.FINALIZADA);
+        consulta.setFinalizadaEn(LocalDateTime.now(reservaClock));
+        consultaRepository.saveAndFlush(consulta);
     }
 
     @Transactional(readOnly = true)
@@ -92,8 +102,8 @@ public class ConsultaService {
         if (horario == null || !horariosLaborales(profesional, dia, ahora).contains(horario)) {
             throw new ReservaInvalidaException("El día u horario elegido no está disponible. Elegí otro turno.");
         }
-        if (consultaRepository.existsByProfesionalIdAndFechaAndHorario(idProfesional, fecha, horario)
-                || consultaRepository.existsByPacienteIdAndFechaAndHorario(idPaciente, fecha, horario)) {
+        if (consultaRepository.existsByProfesionalIdAndFechaAndHorarioAndTurnoActivoTrue(idProfesional, fecha, horario)
+                || consultaRepository.existsByPacienteIdAndFechaAndHorarioAndTurnoActivoTrue(idPaciente, fecha, horario)) {
             throw new ReservaInvalidaException("Ese horario ya está ocupado o coincide con otro de tus turnos.");
         }
         Paciente paciente = pacienteRepository.findById(idPaciente).orElseThrow(this::accesoDenegado);
@@ -209,14 +219,47 @@ public class ConsultaService {
     @Transactional
     public void eliminar(String id) {
         Consulta consulta = consultaDelPaciente(id);
-        consultaRepository.delete(consulta);
+        if (consulta.getEstado() == EstadoConsulta.CANCELADA) { return; }
+        if (!puedeCancelar(consulta)) {
+            throw new EstadoConsultaException("Solo podés cancelar una consulta reservada antes de su inicio.");
+        }
+        consulta.setEstado(EstadoConsulta.CANCELADA);
+        consulta.setCanceladaEn(LocalDateTime.now(reservaClock));
+        consultaRepository.saveAndFlush(consulta);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void guardarCalificacion(String id, Integer calificacion) {
         Consulta consulta = consultaDelPaciente(id);
+        if (!puedeCalificar(consulta) || calificacion == null || calificacion < 1 || calificacion > 5) {
+            throw new EstadoConsultaException("Solo podés calificar una consulta finalizada, una vez y con un valor de 1 a 5.");
+        }
+        // Serializa el promedio; READ_COMMITTED ve las notas confirmadas mientras esperábamos el bloqueo.
+        Profesional profesional = profesionalRepository.bloquearParaCalificacion(consulta.getProfesional().getId())
+                .orElseThrow(this::accesoDenegado);
         consulta.setCalificacion(calificacion);
-        consultaRepository.save(consulta);
+        consultaRepository.saveAndFlush(consulta);
+        profesional.setCalificacion(consultaRepository.promedioCalificacionPorProfesional(profesional.getId()));
+        profesionalRepository.saveAndFlush(profesional);
+    }
+
+    public boolean puedeCancelar(Consulta consulta) {
+        return consulta.getEstado() == EstadoConsulta.RESERVADA
+                && inicio(consulta).isAfter(LocalDateTime.now(reservaClock));
+    }
+
+    public boolean puedeDiagnosticar(Consulta consulta) {
+        return consulta.getEstado() == EstadoConsulta.RESERVADA
+                && !inicio(consulta).plusHours(1).isAfter(LocalDateTime.now(reservaClock));
+    }
+
+    public boolean puedeCalificar(Consulta consulta) {
+        return consulta.getEstado() == EstadoConsulta.FINALIZADA && consulta.getCalificacion() == null
+                && !inicio(consulta).plusHours(1).isAfter(LocalDateTime.now(reservaClock));
+    }
+
+    private LocalDateTime inicio(Consulta consulta) {
+        return LocalDate.parse(consulta.getFecha()).atTime(consulta.getHorario(), 0);
     }
 
     @Transactional(readOnly = true)
